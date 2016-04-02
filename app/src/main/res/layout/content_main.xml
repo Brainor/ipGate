@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:gridSpec="1|8|#0093eeff|K:#ee8700ff:16,l:72,l:16,r|S:#83ee00ff:16,0,l:16,56,l:16,0,r"
+    android:paddingLeft="50px"
+    android:paddingRight="50px"
+    android:paddingTop="80px"
+    android:paddingBottom="100px">
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10px">
+        <TextView
+            android:text="用户名"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent" />
+        <Spinner
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/学生信息"
+            android:paddingLeft="6dp"
+            android:minHeight="0dp"
+            android:longClickable="false"
+            android:spinnerMode="dropdown" />
+    </LinearLayout>
+    <RadioGroup
+        android:minWidth="16dp"
+        android:minHeight="16dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="6dp">
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:checked="true"
+            android:text="免费地址"
+            android:id="@+id/radioButton1"
+            android:layout_weight="1" />
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="收费地址"
+            android:id="@+id/radioButton2"
+            android:layout_weight="1" />
+    </RadioGroup>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/信息文本"
+        android:layout_weight="1"
+        android:padding="10px" />
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10px">
+        <Button
+            android:text="连接"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/button1"
+            android:layout_weight="1"
+            android:padding="3dp"
+            android:tag="0" />
+        <Button
+            android:text="断开连接"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/button2"
+            android:layout_weight="1"
+            android:padding="5px"
+            android:tag="2" />
+        <Button
+            android:text="断开所有连接"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/button3"
+            android:layout_weight="1"
+            android:padding="5px"
+            android:tag="3" />
+    </LinearLayout>
+</LinearLayout>
