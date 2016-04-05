@@ -4,9 +4,15 @@ package com.brainor.myfirstapp;
  * Created by 欧伟科 on 2016/4/3.
  */
 
+import android.os.Handler;
+import android.webkit.JavascriptInterface;
+
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.security.PublicKey;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -18,19 +24,25 @@ import java.util.regex.Pattern;
 class 网络 extends 数据 {
     public HttpURLConnection Request;
     public java.util.List<String> cookies;
-    public String[] 建立连接(String URL,String PostData) throws Exception {
+
+    public String[] 建立连接(String URL, String PostData) throws IOException {
         java.net.URL url=new java.net.URL(URL);
         Request=(HttpURLConnection)url.openConnection();
         Request.setRequestMethod("POST");
         Request.setDoOutput(true);
+        Request.setDoInput(true);
         Request.setRequestProperty("Content-type", "application/x-www-form-urlencoded");
         byte[] byteArray= PostData.getBytes("UTF-8");
         Request.setRequestProperty("ContentLength", String.valueOf(byteArray.length));
         if (!PostData.equals("")){
-            OutputStream dataStreamRequest=Request.getOutputStream();
-            dataStreamRequest.write(byteArray);
-            dataStreamRequest.flush();
-            dataStreamRequest.close();
+            try {
+                DataOutputStream dataStreamRequest = new DataOutputStream(Request.getOutputStream());
+                dataStreamRequest.write(byteArray);
+                dataStreamRequest.flush();
+                dataStreamRequest.close();
+            } catch (java.io.IOException ex) {
+                return new String[]{"错误", ex.getMessage()};
+            }
         }
         cookies=Request.getHeaderFields().get("Set-Cookie");
         return new String[]{"成功"};
@@ -156,7 +168,7 @@ class 数据{
         public String 密码;
         private fwrd 类型=fwrd.free;
         public String value;
-        private String code="|;kiDrqvfi7d$v0p5Fg72Vwbv2;|";
+        private final String code = "|;kiDrqvfi7d$v0p5Fg72Vwbv2;|";
         public String postData(){ return "fwrd=" + 类型 + "&username1=" + 学号 + "&password=" + 密码 + "&username=" + 学号 + code + 密码 + code + 类型.index; }
         public 用户信息(String 学号,String 密码){
             this.学号= 学号;
@@ -172,4 +184,5 @@ class 数据{
         }
     }
     public 用户信息 学生;
+    public Handler uiHandler;
 }

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="10px">
+
+    <TextView
+        android:text="请大家尽量提交IP地址和物理地址, 完善北大的地址库信息. 不收集其它任何信息."
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10px" />
+
+    <TextView
+        android:text="IP地址:"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingLeft="5px" />
+
+    <TextView
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/IP地址"
+        android:paddingLeft="5px"
+        android:layout_gravity="center" />
+
+    <TextView
+        android:text="子网掩码:"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingLeft="5px" />
+
+    <TextView
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/子网掩码"
+        android:paddingLeft="5px"
+        android:layout_gravity="center" />
+
+    <TextView
+        android:text="连接方式:"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingLeft="5px" />
+
+    <TextView
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/连接方式"
+        android:paddingLeft="5px"
+        android:layout_gravity="center" />
+
+    <TextView
+        android:text="物理地址"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingLeft="5px" />
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="5px"
+        android:id="@+id/物理地址"
+        android:contentDescription="当前的物理地址, 如 47楼3层" />
+</LinearLayout>
