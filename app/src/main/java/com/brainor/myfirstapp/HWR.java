@@ -146,7 +146,7 @@ class 网络 extends 数据 {
         Content = Content.replace("FR_DESC_CN=", "包月状态\t");
         Content = Content.replaceAll("FR_DESC_EN=\\S*\\s", "");
         Content = Content.replace("FR_TIME=", "已用时长\t");
-        Pattern pattern=Pattern.compile("(?<=已用时长\t)[\\d\\.]*(?=\\s)");
+        Pattern pattern=Pattern.compile("(?<=包月剩余时长\t)[\\d\\.]*(?=\\s)");
         String 时长=pattern.matcher(Content).group();
         if(时长.length()>0){//后期添加吧
 

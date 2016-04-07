@@ -2,6 +2,7 @@ package com.brainor.myfirstapp;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
@@ -143,9 +144,9 @@ public class MainActivity extends AppCompatActivity {
         Tag = Short.parseShort(view.getTag().toString());
         //Convert.ToInt16(((Button)sender).Tag);//在主界面上点击按钮
         if (radioButton[1].isChecked() && Tag == 0) Tag = 1;//收费
-
-        String[] Content = web.连接(连接类型[Tag]);
-        判断(Content);
+        new 网络交互().execute(连接类型[Tag]);
+        /*String[] Content = web.连接(连接类型[Tag]);
+        判断(Content);*/
 
     }
 
@@ -188,12 +189,13 @@ public class MainActivity extends AppCompatActivity {
                 public void onClick(View view) {
                     设置初始页面();
                     String[] Content_断开连接 = new String[0];
-                    try {
+                    new 网络交互().execute(view.getTag().toString(),"断开指定连接");
+                    /*try {
                         Content_断开连接 = web.断开指定连接(view.getTag().toString());
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-                    判断(Content_断开连接);
+                    判断(Content_断开连接);*/
                 }
             });
 
@@ -202,5 +204,27 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
-
+    private class 网络交互 extends AsyncTask<String,Void,String[]>{
+        @Override
+        protected String[] doInBackground(String... URLs) {
+            if (URLs.length==1) {//是一开始的连接
+                try {
+                    return web.连接(URLs[0]);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }else{//断开指定连接
+                try {
+                    return web.断开指定连接(URLs[0]);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            return new String[]{"错误"};
+        };
+        @Override
+        protected void onPostExecute(String[] Content) {
+            判断(Content);
+        }
+    }
 }
