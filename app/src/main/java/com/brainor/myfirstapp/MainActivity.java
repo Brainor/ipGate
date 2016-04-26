@@ -20,6 +20,10 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import java.io.Console;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
+import java.text.Format;
+import java.util.Locale;
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
@@ -34,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        web.uiHandler = new Handler();//绑定UI线程
+//        web.uiHandler = new Handler();//绑定UI线程
         设置初始页面();
 
     }
@@ -159,10 +163,23 @@ public class MainActivity extends AppCompatActivity {
         {
             String 显示文本 = "";
             for (int i = 1; i < Content.length; i++) {
-                显示文本 = 显示文本 + Content[i] + "\n";
+                String 原文本=Content[i];
+                try {
+                    原文本=new String(原文本.getBytes("GBK"), StandardCharsets.ISO_8859_1);
+                    String 新文本=String.format("%s\t%s\n",(Object[])原文本.split("\t",2));
+                    新文本=new String(新文本.getBytes(StandardCharsets.ISO_8859_1),"GBK");
+                    显示文本+=新文本;
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
+//                显示文本 += String.format("%-15s%-15s\n",(Object[])Content[i].split("\t",2));
                 //if (连接Tag == 3) 图标.Icon = new System.Drawing.Icon(@"E:\Code\Visual Studio\网关\PC\Resources\2.ico");//收费连接更改图标
                 //else 图标.Icon = new System.Drawing.Icon(@"E:\Code\Visual Studio\网关\PC\Resources\1.ico");
             }
+
+            显示文本+=String.format("%s\t%s\n","asdfefa","13");
+            显示文本+="fawefawef\tfwef";
+            显示文本+=String.format("%-15s%-15s\n","当前连d ew","wef3");
             textBlock.setText(显示文本);
         } else//连接失败
         {
