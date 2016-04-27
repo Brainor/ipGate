@@ -4,31 +4,25 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.webkit.JavascriptInterface;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.RadioButton;
 import android.widget.Spinner;
+import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
-
-import java.io.Console;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
-import java.text.Format;
-import java.util.Locale;
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
-    数据.用户信息[] 学生信息=new 数据.用户信息[2];
-    网络 web=new 网络();
+    data.userInfo[] 学生信息=new data.userInfo[2];
+    network web=new network();
     //各种按钮
     RadioButton[] radioButton=new RadioButton[2];
     TextView textBlock;
@@ -38,9 +32,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        web.uiHandler = new Handler();//绑定UI线程
         设置初始页面();
-
     }
 
     void 设置初始页面() {
@@ -49,8 +41,8 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         //增加用户信息列表
-        学生信息[0] = new 数据.用户信息("1301110110","Oudanyi6456");
-        学生信息[1] = new 数据.用户信息("gcuspea", "phyfsc508");
+        学生信息[0] = new data.userInfo("1301110110","Oudanyi6456");
+        学生信息[1] = new data.userInfo("gcuspea", "phyfsc508");
 
         // Get our button from the layout resource,
         // and attach an event to it
@@ -64,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        for (数据.用户信息 item : 学生信息) adapter.add(item.学号);
+        for (data.userInfo item : 学生信息) adapter.add(item.学号);
         学号.setAdapter(adapter);
 
         for (Button item : button) {
@@ -144,11 +136,9 @@ public class MainActivity extends AppCompatActivity {
         web.学生 = 学生信息[学号.getSelectedItemPosition()];
         //确定免费/收费地址
         short Tag;
-        //Button button = (Button)view;
         Tag = Short.parseShort(view.getTag().toString());
-        //Convert.ToInt16(((Button)sender).Tag);//在主界面上点击按钮
         if (radioButton[1].isChecked() && Tag == 0) Tag = 1;//收费
-        new 网络交互().execute(连接类型[Tag]);
+        new netInteract().execute(连接类型[Tag]);
         /*String[] Content = web.连接(连接类型[Tag]);
         判断(Content);*/
 
@@ -162,41 +152,56 @@ public class MainActivity extends AppCompatActivity {
         if (Content[0].contains("YES"))//(断开)连接成功, 显示信息
         {
             String 显示文本 = "";
-            for (int i = 1; i < Content.length; i++) {
-                String 原文本=Content[i];
-                try {
-                    原文本=new String(原文本.getBytes("GBK"), StandardCharsets.ISO_8859_1);
-                    String 新文本=String.format("%s\t%s\n",(Object[])原文本.split("\t",2));
-                    新文本=new String(新文本.getBytes(StandardCharsets.ISO_8859_1),"GBK");
-                    显示文本+=新文本;
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                }
-//                显示文本 += String.format("%-15s%-15s\n",(Object[])Content[i].split("\t",2));
-                //if (连接Tag == 3) 图标.Icon = new System.Drawing.Icon(@"E:\Code\Visual Studio\网关\PC\Resources\2.ico");//收费连接更改图标
-                //else 图标.Icon = new System.Drawing.Icon(@"E:\Code\Visual Studio\网关\PC\Resources\1.ico");
-            }
-
-            显示文本+=String.format("%s\t%s\n","asdfefa","13");
-            显示文本+="fawefawef\tfwef";
-            显示文本+=String.format("%-15s%-15s\n","当前连d ew","wef3");
+            for (int i = 1; i < Content.length; i++) 显示文本 += Content[i]+"\n";
+//            textBlock.setMovementMethod(ScrollingMovementMethod.getInstance());//滚动
             textBlock.setText(显示文本);
         } else//连接失败
-        {
             断开指定连接(Content);
-        }
     }
 
     private void 断开指定连接(String[] Content) {
         setContentView(R.layout.disconnect);
-        TextView textBlock;
-        Button[] IP按钮 = new Button[2];
+        final TableLayout tableLayout=(TableLayout)findViewById(R.id.表格);
+        int IP数量=Content.length/3;
+
+        TableRow tableRow;
+        TextView 文本;
+        Button 断开按钮;
+        for(int i=0;i<IP数量;i++) {
+            tableRow = new TableRow(this);
+            tableRow.setLayoutParams(new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT, TableLayout.LayoutParams.WRAP_CONTENT));
+            for (int j = 0; j < 3; j++) {
+                文本 = new TextView(this);
+                文本.setLayoutParams(new TableRow.LayoutParams(0, TableRow.LayoutParams.WRAP_CONTENT, 1));
+                文本.setText(Content[3 * i + j]);
+                文本.setGravity(Gravity.CENTER);
+                tableRow.addView(文本);
+            }
+            断开按钮=new Button(this);
+            断开按钮.setMinHeight(0);
+            断开按钮.setText("断开连接");
+            断开按钮.setGravity(Gravity.CENTER);
+            断开按钮.setLayoutParams(new TableRow.LayoutParams(0, TableRow.LayoutParams.WRAP_CONTENT, 1));
+            断开按钮.setTag(Content[3*i]);
+            断开按钮.setOnClickListener(new Button.OnClickListener(){
+                @Override
+                public void onClick(View view) {
+                    设置初始页面();
+                    String[] Content_断开连接 = new String[0];
+                    new netInteract().execute(view.getTag().toString(),"断开指定连接");
+                }
+            });
+            tableRow.addView(断开按钮);
+            if (tableLayout != null) {
+                tableLayout.addView(tableRow);
+            }
+        }
+/*        Button[] IP按钮 = new Button[IP数量];
 
         textBlock = (TextView) findViewById(R.id.信息文本);
         IP按钮[0] = (Button) findViewById(R.id.button1);
         IP按钮[1] = (Button) findViewById(R.id.button2);
 
-        int IP数量 = Content.length / 2;
         String 显示文本 = "断开指定连接\n";
         for (int i = 0; i < IP数量; i++) {
             IP按钮[i].setVisibility(View.VISIBLE);//有IP地址就设为可见
@@ -206,22 +211,16 @@ public class MainActivity extends AppCompatActivity {
                 public void onClick(View view) {
                     设置初始页面();
                     String[] Content_断开连接 = new String[0];
-                    new 网络交互().execute(view.getTag().toString(),"断开指定连接");
-                    /*try {
-                        Content_断开连接 = web.断开指定连接(view.getTag().toString());
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    判断(Content_断开连接);*/
+                    new netInteract().execute(view.getTag().toString(),"断开指定连接");
                 }
             });
 
             显示文本 += "IP" + (i + 1) + ":" + Content[2 * i] + "\n连接时间:" + Content[2 * i + 1] + "\n";
             textBlock.setText(显示文本);
-        }
+        }*/
 
     }
-    private class 网络交互 extends AsyncTask<String,Void,String[]>{
+    private class netInteract extends AsyncTask<String,Void,String[]>{//网络交互
         @Override
         protected String[] doInBackground(String... URLs) {
             if (URLs.length==1) {//是一开始的连接
@@ -238,7 +237,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
             return new String[]{"错误"};
-        };
+        }
         @Override
         protected void onPostExecute(String[] Content) {
             判断(Content);

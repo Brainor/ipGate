@@ -1,42 +1,63 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingLeft="50px"
     android:paddingRight="50px"
     android:paddingTop="80px"
-    android:paddingBottom="100px">
+    android:paddingBottom="100px"
+    android:id="@+id/表格">
 
     <TextView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/信息文本"
-        android:padding="10px"
-        android:layout_weight="1" />
-
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:padding="10px">
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="断开指定连接"
+        android:gravity="center"
+        android:paddingBottom="50dp"
+        android:textColor="@android:color/holo_red_dark" />
 
-        <Button
-            android:text="IP1"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/button1"
-            android:layout_weight="1"
-            android:padding="5px"
-            android:visibility="invisible" />
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
-        <Button
-            android:text="IP2"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/button2"
-            android:padding="5px"
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="IP"
+            android:id="@+id/textView"
             android:layout_weight="1"
-            android:visibility="invisible" />
-    </LinearLayout>
-</LinearLayout>
+            android:gravity="center"
+            android:layout_column="0" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="访问范围"
+            android:id="@+id/textView2"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:layout_column="1" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="登录时间"
+            android:id="@+id/textView3"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:layout_column="2" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="操作"
+            android:id="@+id/textView4"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:layout_column="3" />
+    </TableRow>
+    <View
+        android:layout_height="2dip"
+        android:background="#FF909090" />
+</TableLayout>
