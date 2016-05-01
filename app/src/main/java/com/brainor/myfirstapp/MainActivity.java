@@ -20,6 +20,8 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
+import java.net.Inet4Address;
+import java.net.UnknownHostException;
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
@@ -93,6 +95,24 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             case R.id.提交位置:
                 LayoutInflater inflater = LayoutInflater.from(this);
+                new AsyncTask<Void, Void, String>() {//获取IP地址
+                    @Override
+                    protected String doInBackground(Void... params) {
+                        String IP地址="";
+                        try {
+                            IP地址=Inet4Address.getLocalHost().getHostAddress();//NetworkInterface.getNetworkInterfaces()
+                        } catch (UnknownHostException e) {
+                            e.printStackTrace();
+                        }
+                        return IP地址;
+                    }
+                    @Override
+                    protected void onPostExecute(String IPAddr) {
+                        TextView IP地址=(TextView)findViewById(R.id.IP地址);
+                        IP地址.setText(IPAddr);
+                    }
+                }.execute();
+
                 builder.setView(inflater.inflate(R.layout.submit, null))
                         .setTitle("提交位置")
                         .setPositiveButton("确定", new DialogInterface.OnClickListener() {
@@ -207,33 +227,9 @@ public class MainActivity extends AppCompatActivity {
                 tableLayout.addView(tableRow);
             }
         }
-/*        Button[] IP按钮 = new Button[IP数量];
-
-        textBlock = (TextView) findViewById(R.id.信息文本);
-        IP按钮[0] = (Button) findViewById(R.id.button1);
-        IP按钮[1] = (Button) findViewById(R.id.button2);
-
-        String 显示文本 = "断开指定连接\n";
-        for (int i = 0; i < IP数量; i++) {
-            IP按钮[i].setVisibility(View.VISIBLE);//有IP地址就设为可见
-            IP按钮[i].setTag(Content[2 * i]);//增加Tag
-            IP按钮[i].setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    设置初始页面();
-                    String[] Content_断开连接 = new String[0];
-                    new netInteract().execute(view.getTag().toString(),"断开指定连接");
-                }
-            });
-
-            显示文本 += "IP" + (i + 1) + ":" + Content[2 * i] + "\n连接时间:" + Content[2 * i + 1] + "\n";
-            textBlock.setText(显示文本);
-        }*/
-
     }
 
     private class netInteract extends AsyncTask<String, Void, String[]> {//网络交互
-
         @Override
         protected String[] doInBackground(String... URLs) {
             if (URLs.length == 1) {//是一开始的连接
