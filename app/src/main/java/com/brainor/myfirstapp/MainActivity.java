@@ -2,6 +2,7 @@ package com.brainor.myfirstapp;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -18,15 +19,16 @@ import android.widget.Spinner;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
+
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
-    data.userInfo[] 学生信息=new data.userInfo[2];
-    network web=new network();
+    data.userInfo[] 学生信息 = new data.userInfo[2];
+    network web = new network();
     //各种按钮
-    RadioButton[] radioButton=new RadioButton[2];
+    RadioButton[] radioButton = new RadioButton[2];
     TextView textBlock;
-    Button[] button=new Button[3];
+    Button[] button = new Button[3];
     Spinner 学号;
 
     @Override
@@ -41,18 +43,18 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         //增加用户信息列表
-        学生信息[0] = new data.userInfo("1301110110","Oudanyi6456");
+        学生信息[0] = new data.userInfo("1301110110", "Oudanyi6456");
         学生信息[1] = new data.userInfo("gcuspea", "phyfsc508");
 
         // Get our button from the layout resource,
         // and attach an event to it
-        radioButton[0] = (RadioButton)findViewById(R.id.radioButton1);
-        radioButton[1] =(RadioButton)findViewById(R.id.radioButton2);
-        textBlock =(TextView) findViewById(R.id.信息文本);
-        button[0] = (Button)findViewById(R.id.button1);
-        button[1] = (Button)findViewById(R.id.button2);
-        button[2] = (Button)findViewById(R.id.button3);
-        学号 = (Spinner)findViewById(R.id.学生信息);
+        radioButton[0] = (RadioButton) findViewById(R.id.radioButton1);
+        radioButton[1] = (RadioButton) findViewById(R.id.radioButton2);
+        textBlock = (TextView) findViewById(R.id.信息文本);
+        button[0] = (Button) findViewById(R.id.button1);
+        button[1] = (Button) findViewById(R.id.button2);
+        button[2] = (Button) findViewById(R.id.button3);
+        学号 = (Spinner) findViewById(R.id.学生信息);
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -72,6 +74,7 @@ public class MainActivity extends AppCompatActivity {
             });
         }
     }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -152,7 +155,7 @@ public class MainActivity extends AppCompatActivity {
         if (Content[0].contains("YES"))//(断开)连接成功, 显示信息
         {
             String 显示文本 = "";
-            for (int i = 1; i < Content.length; i++) 显示文本 += Content[i]+"\n";
+            for (int i = 1; i < Content.length; i++) 显示文本 += Content[i] + "\n";
 //            textBlock.setMovementMethod(ScrollingMovementMethod.getInstance());//滚动
             textBlock.setText(显示文本);
         } else//连接失败
@@ -161,34 +164,42 @@ public class MainActivity extends AppCompatActivity {
 
     private void 断开指定连接(String[] Content) {
         setContentView(R.layout.disconnect);
-        final TableLayout tableLayout=(TableLayout)findViewById(R.id.表格);
-        int IP数量=Content.length/3;
+        final TableLayout tableLayout = (TableLayout) findViewById(R.id.表格);
+        int IP数量 = Content.length / 3;
 
         TableRow tableRow;
         TextView 文本;
         Button 断开按钮;
-        for(int i=0;i<IP数量;i++) {
+        TableRow.LayoutParams 单元格参数;
+        for (int i = 0; i < IP数量; i++) {
             tableRow = new TableRow(this);
-            tableRow.setLayoutParams(new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT, TableLayout.LayoutParams.WRAP_CONTENT));
+            tableRow.setLayoutParams(new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT, TableLayout.LayoutParams.MATCH_PARENT));
             for (int j = 0; j < 3; j++) {
+                单元格参数 = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT);
                 文本 = new TextView(this);
-                文本.setLayoutParams(new TableRow.LayoutParams(0, TableRow.LayoutParams.WRAP_CONTENT, 1));
+                if (j == 1) {
+                    Content[3 * i + j] = Content[3 * i + j].replace("地址", "");
+                    if(Objects.equals(Content[3 * i + j], "收费"))文本.setTextColor(Color.RED);
+                }
                 文本.setText(Content[3 * i + j]);
-                文本.setGravity(Gravity.CENTER);
+                单元格参数.gravity = (j != 1) ? Gravity.LEFT | Gravity.CENTER_VERTICAL : Gravity.CENTER;
+                文本.setLayoutParams(单元格参数);
+                文本.setPadding(8, 0, 8, 0);
                 tableRow.addView(文本);
             }
-            断开按钮=new Button(this);
-            断开按钮.setMinHeight(0);
-            断开按钮.setText("断开连接");
-            断开按钮.setGravity(Gravity.CENTER);
-            断开按钮.setLayoutParams(new TableRow.LayoutParams(0, TableRow.LayoutParams.WRAP_CONTENT, 1));
-            断开按钮.setTag(Content[3*i]);
-            断开按钮.setOnClickListener(new Button.OnClickListener(){
+            单元格参数 = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT);
+            断开按钮 = new Button(this);
+            断开按钮.setText("断开\n连接");
+            单元格参数.gravity = Gravity.CENTER;
+            断开按钮.setLayoutParams(单元格参数);
+            断开按钮.setPadding(6, 0, 6, 0);
+            断开按钮.setTag(Content[3 * i]);
+            断开按钮.setOnClickListener(new Button.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     设置初始页面();
                     String[] Content_断开连接 = new String[0];
-                    new netInteract().execute(view.getTag().toString(),"断开指定连接");
+                    new netInteract().execute(view.getTag().toString(), "断开指定连接");
                 }
             });
             tableRow.addView(断开按钮);
@@ -220,16 +231,18 @@ public class MainActivity extends AppCompatActivity {
         }*/
 
     }
-    private class netInteract extends AsyncTask<String,Void,String[]>{//网络交互
+
+    private class netInteract extends AsyncTask<String, Void, String[]> {//网络交互
+
         @Override
         protected String[] doInBackground(String... URLs) {
-            if (URLs.length==1) {//是一开始的连接
+            if (URLs.length == 1) {//是一开始的连接
                 try {
                     return web.连接(URLs[0]);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-            }else{//断开指定连接
+            } else {//断开指定连接
                 try {
                     return web.断开指定连接(URLs[0]);
                 } catch (Exception e) {
@@ -238,6 +251,7 @@ public class MainActivity extends AppCompatActivity {
             }
             return new String[]{"错误"};
         }
+
         @Override
         protected void onPostExecute(String[] Content) {
             判断(Content);

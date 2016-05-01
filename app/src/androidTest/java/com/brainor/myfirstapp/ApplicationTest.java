@@ -19,38 +19,6 @@ public class ApplicationTest extends ApplicationTestCase<Application> {
     public ApplicationTest() {
         super(Application.class);
     }
-    public void test() throws Exception {
-        HandlerThread thread1=new HandlerThread("s");
-        System.out.println("原本" + Thread.currentThread().getId());
-        thread1.start();
-        android.os.Handler handler1=new android.os.Handler(thread1.getLooper()) {
-            @Override
-            public void handleMessage(Message msg) {
-                System.out.println("我"+Thread.currentThread().getId());
-                super.handleMessage(msg);
-            }
 
-        };
-        handler1.sendEmptyMessage(1);
-
-        System.out.println("你" + Thread.currentThread().getId());
-        Threadss thread2=new Threadss();
-        handler2.sendEmptyMessage(3);
-
-    }
-    private android.os.Handler handler2=null;
-    class Threadss extends Thread{
-        @Override
-        public void run() {
-            Looper.prepare();
-            handler2= new android.os.Handler() {
-                @Override
-                public void handleMessage(Message msg) {
-                    System.out.println("handle2" + Thread.currentThread().getId());
-                    super.handleMessage(msg);
-                }
-            };
-        }
-    }
 
 }
