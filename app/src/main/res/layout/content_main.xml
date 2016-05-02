@@ -23,7 +23,7 @@
             android:text="用户名"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent" />
+            android:layout_height="wrap_content" />
         <Spinner
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -33,36 +33,36 @@
             android:longClickable="false"
             android:spinnerMode="dropdown" />
     </LinearLayout>
-    <RadioGroup
-        android:minWidth="16dp"
-        android:minHeight="16dp"
+
+    <LinearLayout
+        android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
+        android:gravity="center"
         android:padding="6dp">
-        <RadioButton
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:checked="true"
-            android:text="免费地址"
-            android:id="@+id/radioButton1"
-            android:layout_weight="1" />
-        <RadioButton
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:text="收费地址"
-            android:id="@+id/radioButton2"
-            android:layout_weight="1" />
-    </RadioGroup>
 
-    <Switch
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="免费地址"
-        android:id="@+id/switch1"
-        android:layout_gravity="center_horizontal"
-        android:checked="false"
-        android:showText="false" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="免费地址"
+            android:layout_gravity="center_vertical"
+            android:paddingRight="6dp" />
+
+        <Switch
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/地址转换"
+            android:layout_gravity="center"
+            android:checked="false"
+            android:showText="false" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="收费地址"
+            android:layout_gravity="center_vertical"
+            android:paddingLeft="6dp" />
+    </LinearLayout>
 
     <TextView
         android:layout_width="match_parent"

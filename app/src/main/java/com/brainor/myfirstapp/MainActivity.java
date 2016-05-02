@@ -16,12 +16,16 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.RadioButton;
 import android.widget.Spinner;
+import android.widget.Switch;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
 import java.net.Inet4Address;
-import java.net.UnknownHostException;
+import java.net.InterfaceAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.Collections;
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
@@ -29,6 +33,7 @@ public class MainActivity extends AppCompatActivity {
     network web = new network();
     //各种按钮
     RadioButton[] radioButton = new RadioButton[2];
+    Switch 地址转换;
     TextView textBlock;
     Button[] button = new Button[3];
     Spinner 学号;
@@ -50,8 +55,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Get our button from the layout resource,
         // and attach an event to it
-        radioButton[0] = (RadioButton) findViewById(R.id.radioButton1);
-        radioButton[1] = (RadioButton) findViewById(R.id.radioButton2);
+        地址转换=(Switch)findViewById(R.id.地址转换);
         textBlock = (TextView) findViewById(R.id.信息文本);
         button[0] = (Button) findViewById(R.id.button1);
         button[1] = (Button) findViewById(R.id.button2);
@@ -95,30 +99,13 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             case R.id.提交位置:
                 LayoutInflater inflater = LayoutInflater.from(this);
-                new AsyncTask<Void, Void, String>() {//获取IP地址
-                    @Override
-                    protected String doInBackground(Void... params) {
-                        String IP地址="";
-                        try {
-                            IP地址=Inet4Address.getLocalHost().getHostAddress();//NetworkInterface.getNetworkInterfaces()
-                        } catch (UnknownHostException e) {
-                            e.printStackTrace();
-                        }
-                        return IP地址;
-                    }
-                    @Override
-                    protected void onPostExecute(String IPAddr) {
-                        TextView IP地址=(TextView)findViewById(R.id.IP地址);
-                        IP地址.setText(IPAddr);
-                    }
-                }.execute();
-
-                builder.setView(inflater.inflate(R.layout.submit, null))
+                final View 提交位置view=inflater.inflate(R.layout.submit, null);
+                builder.setView(提交位置view)
                         .setTitle("提交位置")
-                        .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                        .setPositiveButton("提交", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
-
+                                MainActivity.this.finish();
                             }
                         })
                         .setNegativeButton("取消", new DialogInterface.OnClickListener() {
@@ -128,6 +115,30 @@ public class MainActivity extends AppCompatActivity {
                             }
                         });
                 builder.create().show();
+                new AsyncTask<Void, Void, String[]>() {//获取IP地址
+                    @Override
+                    protected String[] doInBackground(Void... params) {
+                        String IP地址="",掩码长度="";
+                        try {
+                            循环OK:
+                            for(NetworkInterface 网络接口: Collections.list(NetworkInterface.getNetworkInterfaces()))
+                                for(InterfaceAddress interfaceAddress:网络接口.getInterfaceAddresses())
+                                    if(interfaceAddress.getAddress() instanceof Inet4Address) {
+                                        IP地址 = interfaceAddress.getAddress().getHostAddress();
+                                        掩码长度 = Short.toString(interfaceAddress.getNetworkPrefixLength());
+                                        break 循环OK;
+                                    }
+                        } catch (SocketException e) {
+                            e.printStackTrace();
+                        }
+                        return new String[]{IP地址,掩码长度};
+                    }
+                    @Override
+                    protected void onPostExecute(String[] IPAddr) {
+                        ((TextView)提交位置view.findViewById(R.id.IP地址)).setText(IPAddr[0]);
+                        ((TextView)提交位置view.findViewById(R.id.子网掩码)).setText(IPAddr[1]);
+                    }
+                }.execute();
                 return true;
             case R.id.关于:
                 builder.setMessage("作者:欧伟科\n联系方式:Brainor@qq.com")
@@ -146,7 +157,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     static final String[] 连接类型 = new String[]{"ipgwopen", "ipgwopenall", "ipgwclose", "ipgwcloseall"};//连接, 收费链接, 断开连接, 断开所有连接
-    Button[] IP按钮 = new Button[2];
 
 
     private void 连接(View view) throws Exception {
@@ -160,7 +170,8 @@ public class MainActivity extends AppCompatActivity {
         //确定免费/收费地址
         short Tag;
         Tag = Short.parseShort(view.getTag().toString());
-        if (radioButton[1].isChecked() && Tag == 0) Tag = 1;//收费
+        if (地址转换.isChecked() && Tag == 0) Tag = 1;//收费
+//        if (radioButton[1].isChecked() && Tag == 0) Tag = 1;//收费
         new netInteract().execute(连接类型[Tag]);
         /*String[] Content = web.连接(连接类型[Tag]);
         判断(Content);*/
