@@ -15,10 +15,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:paddingBottom="50dp"
         android:text="断开指定连接"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textColor="@android:color/holo_red_dark" />
+        android:textColor="@android:color/holo_red_dark"
+        android:padding="12dp"
+        android:visibility="gone" />
 
     <TableRow
         android:layout_width="match_parent"

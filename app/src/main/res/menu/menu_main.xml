@@ -2,11 +2,14 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.brainor.myfirstapp.MainActivity">
-    <item android:id="@+id/学号信息"
-        android:title="学号信息"/>
-    <item android:id="@+id/提交位置"
-        android:title="提交位置"/>
-    <item android:id="@+id/关于"
+    <item
+        android:id="@+id/学号信息"
+        android:title="学号信息" />
+    <item
+        android:id="@+id/提交位置"
+        android:title="提交位置" />
+    <item
+        android:id="@+id/关于"
         android:title="关于"
-        app:showAsAction="never"/>
+        app:showAsAction="never" />
 </menu>
