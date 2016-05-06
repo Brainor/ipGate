@@ -41,7 +41,7 @@ class network extends data {
         return 返回信息(连接信息[1]);
     }
 
-    public String[] 断开指定连接(String IP) throws Exception {
+    public String[] 断开指定连接(String IP) {
         String postData = "messages=" + 学生.value + "&operation=disconnectip_err&from=cas&uid=" + 学生.学号 + "&timeout=1&range=1&disconnectip=" + IP;
         String[] 连接信息 = 建立连接("https://its.pku.edu.cn/netportal/ipgw.ipgw?" + postData, "");
 //        String[] 连接信息=建立连接("https://its.pku.edu.cn/netportal/ipgw.ipgw", postData);
@@ -89,10 +89,10 @@ class network extends data {
             request.setRequestProperty("Content-Length", Integer.toString(postData.length()));
             try {
                 request.setRequestMethod("POST");
-                java.io.DataOutputStream dataOutputStream = new java.io.DataOutputStream(request.getOutputStream());
-                dataOutputStream.write(postData.getBytes(StandardCharsets.UTF_8));
-                dataOutputStream.flush();
-                dataOutputStream.close();
+                try(java.io.DataOutputStream dataOutputStream = new java.io.DataOutputStream(request.getOutputStream())) {
+                    dataOutputStream.write(postData.getBytes(StandardCharsets.UTF_8));
+                    dataOutputStream.flush();
+                }
             } catch (IOException e) {
                 return new String[]{"错误", e.getMessage()};
             }
@@ -104,7 +104,6 @@ class network extends data {
             while ((line = bufferedReader.readLine()) != null) {
                 ResponseFromServer += line + "\n";
             }
-            bufferedReader.close();
         } catch (IOException e) {
             return new String[]{"错误", e.getMessage()};
         }

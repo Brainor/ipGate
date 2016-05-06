@@ -2,7 +2,9 @@ package com.brainor.myfirstapp;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
@@ -38,6 +40,7 @@ import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -65,13 +68,13 @@ public class MainActivity extends AppCompatActivity {
         final File 文件 = new File(getExternalFilesDir(null), "user.ini");
         try {
             if (文件.isFile()) {
-                BufferedReader bufferedReader = new BufferedReader(new FileReader(文件));
-                String 学号;
-                while ((学号 = bufferedReader.readLine()) != null) {
-                    if (Objects.equals(学号, "")) break;
-                    学生信息.add(new data.userInfo(学号, bufferedReader.readLine()));
+                try(BufferedReader bufferedReader = new BufferedReader(new FileReader(文件))) {
+                    String 学号;
+                    while ((学号 = bufferedReader.readLine()) != null) {
+                        if (Objects.equals(学号, "")) break;
+                        学生信息.add(new data.userInfo(学号, bufferedReader.readLine()));
+                    }
                 }
-                bufferedReader.close();
             } else {
                 文件.createNewFile();
             }
@@ -175,7 +178,19 @@ public class MainActivity extends AppCompatActivity {
                         .setPositiveButton("提交", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
-                                MainActivity.this.finish();
+                                CharSequence[] 邮件信息=new CharSequence[3];
+                                邮件信息[0]=((TextView) 提交位置view.findViewById(R.id.IP地址)).getText();
+                                邮件信息[1]=((TextView) 提交位置view.findViewById(R.id.子网掩码)).getText();
+                                邮件信息[2]=((TextView) 提交位置view.findViewById(R.id.物理地址)).getText();
+                                if(邮件信息[2].length()==0)
+                                    Toast.makeText(getApplicationContext(), "请输入物理地址", Toast.LENGTH_LONG).show();
+                                else {
+                                    Intent intent = new Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:brainor@qq.com"));
+                                    intent.putExtra(Intent.EXTRA_SUBJECT, "IP地址")
+                                            .putExtra(Intent.EXTRA_TEXT, Arrays.toString(邮件信息));
+                                    startActivity(intent);
+                                    MainActivity.this.finish();
+                                }
                             }
                         })
                         .setNegativeButton("取消", new DialogInterface.OnClickListener() {
@@ -211,7 +226,7 @@ public class MainActivity extends AppCompatActivity {
                 }.execute();
                 return true;
             case R.id.关于:
-                builder.setMessage("作者:欧伟科\n联系方式:Brainor@qq.com")
+                builder.setMessage("作者:Brainor\n联系方式:Brainor@qq.com")
                         .setTitle("关于")
                         .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                             @Override
@@ -225,9 +240,126 @@ public class MainActivity extends AppCompatActivity {
                 return true;
         }
     }
+    /**
+     * 显示数组中的学号信息
+     */
+    protected void 学号信息() {
+        final ListView 学号view = new ListView(this);
+        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_expandable_list_item_1);
+        for (data.userInfo 学生 : 学生信息) arrayAdapter.add(学生.学号);
+        registerForContextMenu(学号view);
+        学号view.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener() {
+            @Override
+            public void onCreateContextMenu(ContextMenu contextMenu, View view, ContextMenu.ContextMenuInfo contextMenuInfo) {
+                getMenuInflater().inflate(R.menu.menu_modifyid, contextMenu);
+                for(int i=0;i<contextMenu.size();i++){
+                    contextMenu.getItem(i).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                        @Override
+                        public boolean onMenuItemClick(MenuItem menuItem) {
+                            AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuItem.getMenuInfo();
+                            int index = info.position;
+                            switch (menuItem.getItemId()) {
+                                case R.id.修改:
+                                    学号操作(index);
+                                    break;
+                                case R.id.删除:
+                                    学生信息.remove(index);
+                                    writeFile();
+                                    break;
+                            }
+                            return false;
+                        }
+                    });
+                }
+            }
 
+        });
+        学号view.setAdapter(arrayAdapter);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setView(学号view)
+                .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+
+                    }
+                })
+                .setNeutralButton("添加", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        学号操作(i);
+                    }
+                })
+                .setTitle("学号信息");
+        builder.show();
+    }
+    /**
+     * 添加或者修改单条学号
+     *
+     * @param i 确定是哪一个按钮
+     */
+    protected void 学号操作(int i) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        LayoutInflater inflater = LayoutInflater.from(MainActivity.this);
+        final View 添加用户view = inflater.inflate(R.layout.addid, null);
+        final TextView 学号view = (TextView) 添加用户view.findViewById(R.id.学号);
+        final TextView 密码view = (TextView) 添加用户view.findViewById(R.id.密码);
+        final int index = i;
+        if (i >= 0) {//修改已有信息
+            学号view.setText(学生信息.get(index).学号);
+            密码view.setText(学生信息.get(index).密码);
+        }
+        final AlertDialog dialog = builder.setView(添加用户view)
+                .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        String 学号 = 学号view.getText().toString();
+                        String 密码 = 密码view.getText().toString();
+                        if (Objects.equals(学号, "") || Objects.equals(密码, "")) {
+                            Toast.makeText(getApplicationContext(), "输入正确学号和密码", Toast.LENGTH_LONG).show();
+                            return;
+                        }
+                        if (index >= 0) 学生信息.set(index, new data.userInfo(学号, 密码));
+                        else 学生信息.add(new data.userInfo(学号, 密码));
+                        writeFile();
+                    }
+                })
+                .setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+
+                    }
+                })
+                .create();
+        dialog.show();
+    }
     static final String[] 连接类型 = new String[]{"ipgwopen", "ipgwopenall", "ipgwclose", "ipgwcloseall"};//连接, 收费链接, 断开连接, 断开所有连接
 
+    private class netInteract extends AsyncTask<String, Void, String[]> {//网络交互
+
+        @Override
+        protected String[] doInBackground(String... URLs) {
+            if (URLs.length == 1) {//是一开始的连接
+                try {
+                    return web.连接(URLs[0]);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } else {//断开指定连接
+                try {
+                    return web.断开指定连接(URLs[0]);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            return new String[]{"错误"};
+        }
+
+        @Override
+        protected void onPostExecute(String[] Content) {
+            判断(Content);
+        }
+    }
     private void 连接(View view) {
         web.学生 = 学生信息.get(学号.getSelectedItemPosition());
         //确定免费/收费地址
@@ -306,141 +438,18 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private class netInteract extends AsyncTask<String, Void, String[]> {//网络交互
-
-        @Override
-        protected String[] doInBackground(String... URLs) {
-            if (URLs.length == 1) {//是一开始的连接
-                try {
-                    return web.连接(URLs[0]);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            } else {//断开指定连接
-                try {
-                    return web.断开指定连接(URLs[0]);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-            return new String[]{"错误"};
-        }
-
-        @Override
-        protected void onPostExecute(String[] Content) {
-            判断(Content);
-        }
-    }
-
-    /**
-     * 显示数组中的学号信息
-     */
-    protected void 学号信息() {
-        final ListView 学号view = new ListView(this);
-        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_expandable_list_item_1);
-        for (data.userInfo 学生 : 学生信息) arrayAdapter.add(学生.学号);
-        registerForContextMenu(学号view);
-        学号view.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener() {
-            @Override
-            public void onCreateContextMenu(ContextMenu contextMenu, View view, ContextMenu.ContextMenuInfo contextMenuInfo) {
-                getMenuInflater().inflate(R.menu.menu_modifyid, contextMenu);
-                for(int i=0;i<contextMenu.size();i++){
-                    contextMenu.getItem(i).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-                        @Override
-                        public boolean onMenuItemClick(MenuItem menuItem) {
-                            AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuItem.getMenuInfo();
-                            int index = info.position;
-                            switch (menuItem.getItemId()) {
-                                case R.id.修改:
-                                    学号操作(index);
-                                    break;
-                                case R.id.删除:
-                                    学生信息.remove(index);
-                                    writeFile();
-                                    break;
-                            }
-                            return false;
-                        }
-                    });
-                }
-            }
-
-        });
-        学号view.setAdapter(arrayAdapter);
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setView(学号view)
-                .setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-
-                    }
-                })
-                .setNeutralButton("添加", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        学号操作(i);
-                    }
-                })
-                .setTitle("学号信息");
-        builder.show();
-    }
-
-    /**
-     * 添加或者修改单条学号
-     *
-     * @param i 确定是哪一个按钮
-     */
-    protected void 学号操作(int i) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-        LayoutInflater inflater = LayoutInflater.from(MainActivity.this);
-        final View 添加用户view = inflater.inflate(R.layout.addid, null);
-        final TextView 学号view = (TextView) 添加用户view.findViewById(R.id.学号);
-        final TextView 密码view = (TextView) 添加用户view.findViewById(R.id.密码);
-        final int index = i;
-        if (i >= 0) {//修改已有信息
-            学号view.setText(学生信息.get(index).学号);
-            密码view.setText(学生信息.get(index).密码);
-        }
-        final AlertDialog dialog = builder.setView(添加用户view)
-                .setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        String 学号 = 学号view.getText().toString();
-                        String 密码 = 密码view.getText().toString();
-                        if (Objects.equals(学号, "") || Objects.equals(密码, "")) {
-                            Toast.makeText(getApplicationContext(), "输入正确学号和密码", Toast.LENGTH_LONG).show();
-                            return;
-                        }
-                        if (index >= 0) 学生信息.set(index, new data.userInfo(学号, 密码));
-                        else 学生信息.add(new data.userInfo(学号, 密码));
-                        writeFile();
-                    }
-                })
-                .setNegativeButton("取消", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-
-                    }
-                })
-                .create();
-        dialog.show();
-    }
-
     /**
      * 保存学号到文件
      */
     protected void writeFile() {
         final File 文件 = new File(getExternalFilesDir(null), "user.ini");
-        try {
-            BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(文件));
+        try(BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(文件))) {
             for (data.userInfo 学生 : 学生信息) {
                 bufferedWriter.write(学生.学号);
                 bufferedWriter.newLine();
                 bufferedWriter.write(学生.密码);
                 bufferedWriter.newLine();
             }
-            bufferedWriter.close();
             设置列表();
         } catch (IOException e) {
             Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();

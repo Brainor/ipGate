@@ -1,5 +1,5 @@
 <resources>
     <string name="app_name">北大网关</string>
     <string name="action_settings">Settings</string>
-    <string name="提交ip提示">请大家尽量提交IP地址和物理地址, 完善北大的地址库信息. 不收集其它任何信息.</string>
+    <string name="提交ip提示">请大家尽量提交IP地址和物理地址, 完善北大的地址库信息. 不收集其它任何信息.\n由于没有服务器, 故直接将信息发送到我的邮箱里, 前提是你在手机中需要一个已设置完成的邮箱.</string>
 </resources>
