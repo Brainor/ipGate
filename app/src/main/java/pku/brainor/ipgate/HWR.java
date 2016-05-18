@@ -1,7 +1,8 @@
-package com.brainor.myfirstapp;
+package pku.brainor.ipgate;
 
 /**
  * Created by 欧伟科 on 2016/4/3.
+ * Edited by 欧伟科 on 2016/5/18.
  */
 
 import java.io.BufferedReader;
@@ -11,7 +12,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
-import java.net.CookieStore;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URLEncoder;

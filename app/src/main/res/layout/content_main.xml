@@ -8,7 +8,7 @@
     android:layout_height="match_parent"
     tools:gridSpec="1|8|#0093eeff|K:#ee8700ff:16,l:72,l:16,r|S:#83ee00ff:16,0,l:16,56,l:16,0,r"
     tools:showIn="@layout/activity_main"
-    tools:context=".MainActivity"
+    tools:context="pku.brainor.ipgate.MainActivity"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"

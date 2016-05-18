@@ -1,7 +1,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="com.brainor.myfirstapp.MainActivity">
+    tools:context="pku.brainor.ipgate.MainActivity">
     <item
         android:id="@+id/学号信息"
         android:title="学号信息" />
