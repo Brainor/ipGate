@@ -1,12 +1,18 @@
 package pku.brainor.ipgate;
 
+import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Color;
 import android.net.Uri;
 import android.net.wifi.ScanResult;
+import android.net.wifi.SupplicantState;
 import android.net.wifi.WifiConfiguration;
+import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -52,7 +58,6 @@ public class MainActivity extends AppCompatActivity {
     TextView textBlock;
     Button[] button = new Button[3];
     Spinner 学号;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
         final File 文件 = new File(getExternalFilesDir(null), "user.ini");
         try {
             if (文件.isFile()) {
-                try(BufferedReader bufferedReader = new BufferedReader(new FileReader(文件))) {
+                try (BufferedReader bufferedReader = new BufferedReader(new FileReader(文件))) {
                     String 学号;
                     while ((学号 = bufferedReader.readLine()) != null) {
                         if (Objects.equals(学号, "")) break;
@@ -119,6 +124,26 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
     }
+
+    /**
+     * 暂时有问题
+     *//*
+    @Override
+    protected void onResume() {
+        super.onResume();
+        //注册广播
+        IntentFilter intentFilter=new IntentFilter("android.net.wifi.STATE_CHANGE");
+        registerReceiver(new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                WifiInfo wifiInfo=intent.getParcelableExtra(WifiManager.EXTRA_WIFI_INFO);
+                if(intent.hasExtra(WifiManager.EXTRA_BSSID) && wifiInfo!=null && Objects.equals(wifiInfo.getSSID(), "\"Wireless PKU\"") ){
+                    Toast.makeText(getApplicationContext(), "尝试自动联网", Toast.LENGTH_LONG).show();
+                    连接(button[0]);
+                }
+            }
+        }, intentFilter);
+    }*/
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -178,11 +203,11 @@ public class MainActivity extends AppCompatActivity {
                         .setPositiveButton("提交", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
-                                CharSequence[] 邮件信息=new CharSequence[3];
-                                邮件信息[0]=((TextView) 提交位置view.findViewById(R.id.IP地址)).getText();
-                                邮件信息[1]=((TextView) 提交位置view.findViewById(R.id.子网掩码)).getText();
-                                邮件信息[2]=((TextView) 提交位置view.findViewById(R.id.物理地址)).getText();
-                                if(邮件信息[2].length()==0)
+                                CharSequence[] 邮件信息 = new CharSequence[3];
+                                邮件信息[0] = ((TextView) 提交位置view.findViewById(R.id.IP地址)).getText();
+                                邮件信息[1] = ((TextView) 提交位置view.findViewById(R.id.子网掩码)).getText();
+                                邮件信息[2] = ((TextView) 提交位置view.findViewById(R.id.物理地址)).getText();
+                                if (邮件信息[2].length() == 0)
                                     Toast.makeText(getApplicationContext(), "请输入物理地址", Toast.LENGTH_LONG).show();
                                 else {
                                     Intent intent = new Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:brainor@qq.com"));
@@ -240,6 +265,7 @@ public class MainActivity extends AppCompatActivity {
                 return true;
         }
     }
+
     /**
      * 显示数组中的学号信息
      */
@@ -252,7 +278,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onCreateContextMenu(ContextMenu contextMenu, View view, ContextMenu.ContextMenuInfo contextMenuInfo) {
                 getMenuInflater().inflate(R.menu.menu_modifyid, contextMenu);
-                for(int i=0;i<contextMenu.size();i++){
+                for (int i = 0; i < contextMenu.size(); i++) {
                     contextMenu.getItem(i).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
                         @Override
                         public boolean onMenuItemClick(MenuItem menuItem) {
@@ -293,6 +319,7 @@ public class MainActivity extends AppCompatActivity {
                 .setTitle("学号信息");
         builder.show();
     }
+
     /**
      * 添加或者修改单条学号
      *
@@ -333,9 +360,10 @@ public class MainActivity extends AppCompatActivity {
                 .create();
         dialog.show();
     }
+
     static final String[] 连接类型 = new String[]{"ipgwopen", "ipgwopenall", "ipgwclose", "ipgwcloseall"};//连接, 收费链接, 断开连接, 断开所有连接
 
-    private class netInteract extends AsyncTask<String, Void, String[]> {//网络交互
+    public class netInteract extends AsyncTask<String, Void, String[]> {//网络交互
 
         @Override
         protected String[] doInBackground(String... URLs) {
@@ -360,6 +388,7 @@ public class MainActivity extends AppCompatActivity {
             判断(Content);
         }
     }
+
     private void 连接(View view) {
         web.学生 = 学生信息.get(学号.getSelectedItemPosition());
         //确定免费/收费地址
@@ -382,11 +411,23 @@ public class MainActivity extends AppCompatActivity {
             }
 //            textBlock.setMovementMethod(ScrollingMovementMethod.getInstance());//滚动
             textBlock.setText(显示文本);
-        } else//连接失败
-            断开指定连接(Content);
+        } else {//连接失败
+//            断开指定连接(Content);
+            Intent 断开指定连接界面 = new Intent(this, disconnectSpecifiedConnection.class);
+            断开指定连接界面.putExtra("content", Content);
+            startActivityForResult(断开指定连接界面, 0);
+        }
     }
 
-    private void 断开指定连接(String[] Content) {
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode == Activity.RESULT_OK && requestCode == 0) {
+            String IP = data.getStringExtra("IP");
+            new netInteract().execute(IP, "断开指定连接");
+        }
+    }
+
+    /*private void 断开指定连接(String[] Content) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         LayoutInflater inflater = LayoutInflater.from(this);
         final View 指定连接view = inflater.inflate(R.layout.disconnect, null);
@@ -436,14 +477,14 @@ public class MainActivity extends AppCompatActivity {
                 tableLayout.addView(tableRow);
             }
         }
-    }
+    }*/
 
     /**
      * 保存学号到文件
      */
     protected void writeFile() {
         final File 文件 = new File(getExternalFilesDir(null), "user.ini");
-        try(BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(文件))) {
+        try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(文件))) {
             for (data.userInfo 学生 : 学生信息) {
                 bufferedWriter.write(学生.学号);
                 bufferedWriter.newLine();

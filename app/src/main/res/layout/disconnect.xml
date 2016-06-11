@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/表格"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingBottom="100px"
-    android:paddingLeft="50px"
-    android:paddingRight="50px"
+    android:paddingLeft="10dp"
+    android:paddingRight="10dp"
     android:paddingTop="80px"
     android:stretchColumns="3"
     android:shrinkColumns="3">

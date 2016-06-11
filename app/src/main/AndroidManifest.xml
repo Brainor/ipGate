@@ -16,13 +16,19 @@
         <activity
             android:name="pku.brainor.ipgate.MainActivity"
             android:label="@string/app_name"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/Theme.AppCompat.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".disconnectSpecifiedConnection"
+            android:label="断开指定连接"
+            android:theme="@style/Theme.AppCompat.Dialog">
+
+        </activity>
+
     </application>
 
 </manifest>
