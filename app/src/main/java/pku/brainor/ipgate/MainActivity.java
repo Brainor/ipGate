@@ -165,14 +165,25 @@ public class MainActivity extends AppCompatActivity {
             case R.id.提交位置:
                 //先检查是否连接Wireless PKU
                 final WifiManager wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
+                if(!wifiManager.isWifiEnabled()){//再检查是否打开WiFi
+                    builder.setMessage("WiFi没有打开.")
+                            .setPositiveButton("打开WiFi", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    wifiManager.setWifiEnabled(true);
+                                }
+                            });
+                    builder.create().show();
+                    return true;
+                }
                 String wifi名称 = wifiManager.getConnectionInfo().getSSID().replace("\"", "");
                 if (!Objects.equals(wifi名称, "Wireless PKU")) {
-                    builder.setMessage("当前WiFi名称是" + wifi名称 + "\n请将WiFi连接至Wireless PKU后提交当前位置.");
+                    builder.setMessage("当前连接名称是" + wifi名称 + "\n请将WiFi连接至Wireless PKU后提交当前位置.");
                     List<ScanResult> scanResult = wifiManager.getScanResults();
-                    int i;
-                    for (i = 0; i < scanResult.size(); i++) {
+
+                    for (int i = 0; i < scanResult.size(); i++) {
                         if (Objects.equals(scanResult.get(i).SSID, "Wireless PKU")) {
-                            for (WifiConfiguration wifiConfiguration : wifiManager.getConfiguredNetworks()) {
+                            for (WifiConfiguration wifiConfiguration : wifiManager.getConfiguredNetworks()) {//如果没有打开WiFi开关, 会返回null
                                 if (Objects.equals(wifiConfiguration.SSID, "\"Wireless PKU\"")) {
                                     final WifiConfiguration wifi设置 = wifiConfiguration;
                                     builder.setPositiveButton("连接", new DialogInterface.OnClickListener() {
