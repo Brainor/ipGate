@@ -55,10 +55,13 @@ public class disconnectSpecifiedConnection extends AppCompatActivity {
             断开按钮.setLayoutParams(单元格参数);
             断开按钮.setPadding(6, 0, 6, 0);
             断开按钮.setTag(Content[3 * i]);
-            断开按钮.setOnClickListener(view -> {
+            断开按钮.setOnClickListener(new Button.OnClickListener() {
+                @Override
+                public void onClick(View view) {
 //                    设置初始页面();
-                setResult(RESULT_OK, getIntent().putExtra("IP", view.getTag().toString()));
-                finish();
+                    setResult(RESULT_OK, getIntent().putExtra("IP", view.getTag().toString()));
+                    finish();
+                }
             });
             tableRow.addView(断开按钮);
             if (tableLayout != null) {
