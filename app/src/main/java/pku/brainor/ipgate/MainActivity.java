@@ -1,37 +1,28 @@
 package pku.brainor.ipgate;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.graphics.Color;
 import android.net.Uri;
 import android.net.wifi.ScanResult;
-import android.net.wifi.SupplicantState;
 import android.net.wifi.WifiConfiguration;
-import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.ContextMenu;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.Switch;
-import android.widget.TableLayout;
-import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -58,9 +49,19 @@ public class MainActivity extends AppCompatActivity {
     TextView textBlock;
     Button[] button = new Button[3];
     Spinner 学号;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... voids) {
+                web.建立连接("https://its.pku.edu.cn/cas/ITSClient", "cmd=getconnections&username=1301110110&password=Oudanyi6456");//closeall
+                //"cmd=open&username=" + username + "&password=" + password + "&iprange=" + fee或者free + "&ip=
+                //"cmd=disconnect&username=" + username + "&password=" + password + "&ip="
+                return null;
+            }
+        }.execute();
         设置初始页面();
     }
 
@@ -91,17 +92,8 @@ public class MainActivity extends AppCompatActivity {
         if (学生信息.size() == 0) {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setMessage("没有学号信息, 请添加.")
-                    .setPositiveButton("添加学号", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            学号信息();
-                        }
-                    })
-                    .setNegativeButton("取消", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-
-                        }
+                    .setPositiveButton("添加学号", (dialogInterface, i) -> 学号信息())
+                    .setNegativeButton("取消", (dialogInterface, i) -> {
                     });
             builder.show();
         }
@@ -117,12 +109,13 @@ public class MainActivity extends AppCompatActivity {
         设置列表();
 
         for (Button item : button)
-            item.setOnClickListener(new View.OnClickListener() {
+            item.setOnClickListener(this::连接);
+            /*item.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     连接(view);
                 }
-            });
+            });*/
     }
 
     /**
@@ -144,7 +137,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }, intentFilter);
     }*/
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -165,14 +157,9 @@ public class MainActivity extends AppCompatActivity {
             case R.id.提交位置:
                 //先检查是否连接Wireless PKU
                 final WifiManager wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
-                if(!wifiManager.isWifiEnabled()){//再检查是否打开WiFi
+                if (!wifiManager.isWifiEnabled()) {//再检查是否打开WiFi
                     builder.setMessage("WiFi没有打开.")
-                            .setPositiveButton("打开WiFi", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialogInterface, int i) {
-                                    wifiManager.setWifiEnabled(true);
-                                }
-                            });
+                            .setPositiveButton("打开WiFi", (dialogInterface, i) -> wifiManager.setWifiEnabled(true));
                     builder.create().show();
                     return true;
                 }
@@ -186,17 +173,10 @@ public class MainActivity extends AppCompatActivity {
                             for (WifiConfiguration wifiConfiguration : wifiManager.getConfiguredNetworks()) {//如果没有打开WiFi开关, 会返回null
                                 if (Objects.equals(wifiConfiguration.SSID, "\"Wireless PKU\"")) {
                                     final WifiConfiguration wifi设置 = wifiConfiguration;
-                                    builder.setPositiveButton("连接", new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialogInterface, int i) {
-                                            wifiManager.enableNetwork(wifi设置.networkId, true);
-                                        }
-                                    });
-                                    builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialogInterface, int i) {
-
-                                        }
+                                    builder.setPositiveButton("连接", (dialogInterface, i1) ->
+                                            wifiManager.enableNetwork(wifi设置.networkId, true)
+                                    );
+                                    builder.setNegativeButton("取消", (dialogInterface, i1) -> {
                                     });
                                     break;
                                 }
@@ -211,29 +191,22 @@ public class MainActivity extends AppCompatActivity {
                 final View 提交位置view = inflater.inflate(R.layout.submit, null);
                 builder.setView(提交位置view)
                         .setTitle("提交位置")
-                        .setPositiveButton("提交", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                CharSequence[] 邮件信息 = new CharSequence[3];
-                                邮件信息[0] = ((TextView) 提交位置view.findViewById(R.id.IP地址)).getText();
-                                邮件信息[1] = ((TextView) 提交位置view.findViewById(R.id.子网掩码)).getText();
-                                邮件信息[2] = ((TextView) 提交位置view.findViewById(R.id.物理地址)).getText();
-                                if (邮件信息[2].length() == 0)
-                                    Toast.makeText(getApplicationContext(), "请输入物理地址", Toast.LENGTH_LONG).show();
-                                else {
-                                    Intent intent = new Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:brainor@qq.com"));
-                                    intent.putExtra(Intent.EXTRA_SUBJECT, "IP地址")
-                                            .putExtra(Intent.EXTRA_TEXT, Arrays.toString(邮件信息));
-                                    startActivity(intent);
-                                    MainActivity.this.finish();
-                                }
+                        .setPositiveButton("提交", (dialogInterface, i) -> {
+                            CharSequence[] 邮件信息 = new CharSequence[3];
+                            邮件信息[0] = ((TextView) 提交位置view.findViewById(R.id.IP地址)).getText();
+                            邮件信息[1] = ((TextView) 提交位置view.findViewById(R.id.子网掩码)).getText();
+                            邮件信息[2] = ((TextView) 提交位置view.findViewById(R.id.物理地址)).getText();
+                            if (邮件信息[2].length() == 0)
+                                Toast.makeText(getApplicationContext(), "请输入物理地址", Toast.LENGTH_LONG).show();
+                            else {
+                                Intent intent = new Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:brainor@qq.com"));
+                                intent.putExtra(Intent.EXTRA_SUBJECT, "IP地址")
+                                        .putExtra(Intent.EXTRA_TEXT, Arrays.toString(邮件信息));
+                                startActivity(intent);
+                                MainActivity.this.finish();
                             }
                         })
-                        .setNegativeButton("取消", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-
-                            }
+                        .setNegativeButton("取消", (dialogInterface, i) -> {
                         });
                 builder.create().show();
                 new AsyncTask<Void, Void, String[]>() {//获取IP地址
@@ -264,11 +237,7 @@ public class MainActivity extends AppCompatActivity {
             case R.id.关于:
                 builder.setMessage("作者:Brainor\n联系方式:Brainor@qq.com")
                         .setTitle("关于")
-                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-
-                            }
+                        .setPositiveButton("OK", (dialogInterface, i) -> {
                         });
                 builder.create().show();
                 return true;
@@ -285,48 +254,32 @@ public class MainActivity extends AppCompatActivity {
         ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_expandable_list_item_1);
         for (data.userInfo 学生 : 学生信息) arrayAdapter.add(学生.学号);
         registerForContextMenu(学号view);
-        学号view.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener() {
-            @Override
-            public void onCreateContextMenu(ContextMenu contextMenu, View view, ContextMenu.ContextMenuInfo contextMenuInfo) {
-                getMenuInflater().inflate(R.menu.menu_modifyid, contextMenu);
-                for (int i = 0; i < contextMenu.size(); i++) {
-                    contextMenu.getItem(i).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-                        @Override
-                        public boolean onMenuItemClick(MenuItem menuItem) {
-                            AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuItem.getMenuInfo();
-                            int index = info.position;
-                            switch (menuItem.getItemId()) {
-                                case R.id.修改:
-                                    学号操作(index);
-                                    break;
-                                case R.id.删除:
-                                    学生信息.remove(index);
-                                    writeFile();
-                                    break;
-                            }
-                            return false;
-                        }
-                    });
-                }
+        学号view.setOnCreateContextMenuListener((contextMenu, view, contextMenuInfo) -> {
+            getMenuInflater().inflate(R.menu.menu_modifyid, contextMenu);
+            for (int i = 0; i < contextMenu.size(); i++) {
+                contextMenu.getItem(i).setOnMenuItemClickListener(menuItem -> {
+                    AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuItem.getMenuInfo();
+                    int index = info.position;
+                    switch (menuItem.getItemId()) {
+                        case R.id.修改:
+                            学号操作(index);
+                            break;
+                        case R.id.删除:
+                            学生信息.remove(index);
+                            writeFile();
+                            break;
+                    }
+                    return false;
+                });
             }
-
         });
         学号view.setAdapter(arrayAdapter);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setView(学号view)
-                .setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-
-                    }
+                .setPositiveButton("确定", (dialogInterface, i) -> {
                 })
-                .setNeutralButton("添加", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        学号操作(i);
-                    }
-                })
+                .setNeutralButton("添加", (dialogInterface, i) -> 学号操作(i))
                 .setTitle("学号信息");
         builder.show();
     }
@@ -348,25 +301,18 @@ public class MainActivity extends AppCompatActivity {
             密码view.setText(学生信息.get(index).密码);
         }
         final AlertDialog dialog = builder.setView(添加用户view)
-                .setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        String 学号 = 学号view.getText().toString();
-                        String 密码 = 密码view.getText().toString();
-                        if (Objects.equals(学号, "") || Objects.equals(密码, "")) {
-                            Toast.makeText(getApplicationContext(), "输入正确学号和密码", Toast.LENGTH_LONG).show();
-                            return;
-                        }
-                        if (index >= 0) 学生信息.set(index, new data.userInfo(学号, 密码));
-                        else 学生信息.add(new data.userInfo(学号, 密码));
-                        writeFile();
+                .setPositiveButton("确定", (dialogInterface, i1) -> {
+                    String 学号1 = 学号view.getText().toString();
+                    String 密码 = 密码view.getText().toString();
+                    if (Objects.equals(学号1, "") || Objects.equals(密码, "")) {
+                        Toast.makeText(getApplicationContext(), "输入正确学号和密码", Toast.LENGTH_LONG).show();
+                        return;
                     }
+                    if (index >= 0) 学生信息.set(index, new data.userInfo(学号1, 密码));
+                    else 学生信息.add(new data.userInfo(学号1, 密码));
+                    writeFile();
                 })
-                .setNegativeButton("取消", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-
-                    }
+                .setNegativeButton("取消", (dialogInterface, i1) -> {
                 })
                 .create();
         dialog.show();
