@@ -50,6 +50,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * 新的API
+ * web.建立连接("https://its.pku.edu.cn/cas/ITSClient", "cmd=getconnections&username=1301110110&password=Oudanyi6456");//closeall 显示连接情况, 断开所有链接
+ * "cmd=open&username=" + username + "&password=" + password + "&iprange=" + fee或者free + "&ip=", //打开指定连接
+ * "cmd=disconnect&username=" + username + "&password=" + password + "&ip="//断开指定连接
+ */
 public class MainActivity extends AppCompatActivity {
     ArrayList<data.userInfo> 学生信息 = new ArrayList<>();
     network web = new network();
