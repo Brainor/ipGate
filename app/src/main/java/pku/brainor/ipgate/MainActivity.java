@@ -2,24 +2,17 @@ package pku.brainor.ipgate;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.graphics.Color;
 import android.net.Uri;
 import android.net.wifi.ScanResult;
-import android.net.wifi.SupplicantState;
 import android.net.wifi.WifiConfiguration;
-import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.ContextMenu;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -30,8 +23,6 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.Switch;
-import android.widget.TableLayout;
-import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -53,11 +44,12 @@ import java.util.Objects;
 /**
  * 新的API
  * web.建立连接("https://its.pku.edu.cn/cas/ITSClient", "cmd=getconnections&username=1301110110&password=Oudanyi6456");//closeall 显示连接情况, 断开所有链接
- * "cmd=open&username=" + username + "&password=" + password + "&iprange=" + fee或者free + "&ip=", //打开指定连接
+ * "cmd=open&username=" + username + "&password=" + password + "&iprange=" + fee或者free + "&ip=", //打开指定连接, 打开这个连接就ip=就可以
  * "cmd=disconnect&username=" + username + "&password=" + password + "&ip="//断开指定连接
+ * "cmd=close"//断开本地连接
  */
 public class MainActivity extends AppCompatActivity {
-    ArrayList<data.userInfo> 学生信息 = new ArrayList<>();
+    ArrayList<netConectingData.userInfo> 学生信息 = new ArrayList<>();
     network web = new network();
     //各种按钮
     Switch 地址转换;
@@ -83,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
                     String 学号;
                     while ((学号 = bufferedReader.readLine()) != null) {
                         if (Objects.equals(学号, "")) break;
-                        学生信息.add(new data.userInfo(学号, bufferedReader.readLine()));
+                        学生信息.add(new netConectingData.userInfo(学号, bufferedReader.readLine()));
                     }
                 }
             } else {
@@ -92,8 +84,8 @@ public class MainActivity extends AppCompatActivity {
         } catch (IOException e) {
             Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
         }
-        /*学生信息.add(new data.userInfo("1301110110", "Oudanyi6456"));
-        学生信息.add(new data.userInfo("gcuspea", "phyfsc508"));*/
+        /*学生信息.add(new netConectingData.userInfo("1301110110", "Oudanyi6456"));
+        学生信息.add(new netConectingData.userInfo("gcuspea", "phyfsc508"));*/
         if (学生信息.size() == 0) {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setMessage("没有学号信息, 请添加.")
@@ -289,7 +281,7 @@ public class MainActivity extends AppCompatActivity {
     protected void 学号信息() {
         final ListView 学号view = new ListView(this);
         ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_expandable_list_item_1);
-        for (data.userInfo 学生 : 学生信息) arrayAdapter.add(学生.学号);
+        for (netConectingData.userInfo 学生 : 学生信息) arrayAdapter.add(学生.学号);
         registerForContextMenu(学号view);
         学号view.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener() {
             @Override
@@ -363,8 +355,8 @@ public class MainActivity extends AppCompatActivity {
                             Toast.makeText(getApplicationContext(), "输入正确学号和密码", Toast.LENGTH_LONG).show();
                             return;
                         }
-                        if (index >= 0) 学生信息.set(index, new data.userInfo(学号, 密码));
-                        else 学生信息.add(new data.userInfo(学号, 密码));
+                        if (index >= 0) 学生信息.set(index, new netConectingData.userInfo(学号, 密码));
+                        else 学生信息.add(new netConectingData.userInfo(学号, 密码));
                         writeFile();
                     }
                 })
@@ -378,21 +370,20 @@ public class MainActivity extends AppCompatActivity {
         dialog.show();
     }
 
-    static final String[] 连接类型 = new String[]{"ipgwopen", "ipgwopenall", "ipgwclose", "ipgwcloseall"};//连接, 收费链接, 断开连接, 断开所有连接
+    /* web.建立连接("https://its.pku.edu.cn/cas/ITSClient", "cmd=getconnections&username=1301110110&password=Oudanyi6456");//closeall 显示连接情况, 断开所有链接
+    * "cmd=open&username=" + username + "&password=" + password + "&iprange=" + fee或者free + "&ip=", //打开指定连接, 打开这个连接就ip=就可以
+    * "cmd=disconnect&username=" + username + "&password=" + password + "&ip="//断开指定连接
+    * "cmd=close"//断开本地连接
+    */
+    static final String[] 连接类型 = new String[]{"open", "close", "closeall", "getconnections", "disconnect"};//连接, 断开连接, 断开所有连接, 获取连接状态, 断开指定连接
 
-    public class netInteract extends AsyncTask<String, Void, String[]> {//网络交互
+    public class netInteract extends AsyncTask<Void, Void, String[]> {//网络交互
 
         @Override
-        protected String[] doInBackground(String... URLs) {
+        protected String[] doInBackground(Void... URLs) {
             if (URLs.length == 1) {//是一开始的连接
                 try {
-                    return web.连接(URLs[0]);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            } else {//断开指定连接
-                try {
-                    return web.断开指定连接(URLs[0]);
+                    return web.连接();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -407,12 +398,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void 连接(View view) {
-        web.学生 = 学生信息.get(学号.getSelectedItemPosition());
+        netConectingData.连接信息.学生 = 学生信息.get(学号.getSelectedItemPosition());
         //确定免费/收费地址
-        short Tag;
-        Tag = Short.parseShort(view.getTag().toString());
-        if (地址转换.isChecked() && Tag == 0) Tag = 1;//收费
-        new netInteract().execute(连接类型[Tag]);
+        netConectingData.连接信息.类型 = 地址转换.isChecked() ? "fee" : "free";
+        netConectingData.连接信息.ip地址 = "";
+        netConectingData.连接信息.命令 = 连接类型[Short.parseShort(view.getTag().toString())];
+        new netInteract().execute();
     }
 
     private void 判断(String[] Content) {
@@ -439,62 +430,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == Activity.RESULT_OK && requestCode == 0) {
-            String IP = data.getStringExtra("IP");
-            new netInteract().execute(IP, "断开指定连接");
+            netConectingData.连接信息.ip地址 = data.getStringExtra("IP");
+            netConectingData.连接信息.命令 = "disconnect";
+            new netInteract().execute();
         }
     }
-
-    /*private void 断开指定连接(String[] Content) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        LayoutInflater inflater = LayoutInflater.from(this);
-        final View 指定连接view = inflater.inflate(R.layout.disconnect, null);
-        final AlertDialog dialog = builder.setView(指定连接view).setTitle("断开指定连接").create();
-        dialog.show();
-
-        final TableLayout tableLayout = (TableLayout) 指定连接view.findViewById(R.id.表格);
-        int IP数量 = Content.length / 3;
-
-        TableRow tableRow;
-        TextView 文本;
-        Button 断开按钮;
-        TableRow.LayoutParams 单元格参数;
-        for (int i = 0; i < IP数量; i++) {
-            tableRow = new TableRow(this);
-            tableRow.setLayoutParams(new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT, TableLayout.LayoutParams.MATCH_PARENT));
-            for (int j = 0; j < 3; j++) {
-                单元格参数 = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT);
-                文本 = new TextView(this);
-                if (j == 1) {
-                    Content[3 * i + j] = Content[3 * i + j].replace("地址", "");
-                    if (Objects.equals(Content[3 * i + j], "收费")) 文本.setTextColor(Color.RED);
-                }
-                文本.setText(Content[3 * i + j]);
-                单元格参数.gravity = (j != 1) ? Gravity.LEFT | Gravity.CENTER_VERTICAL : Gravity.CENTER;
-                文本.setLayoutParams(单元格参数);
-                文本.setPadding(8, 0, 8, 0);
-                tableRow.addView(文本);
-            }
-            单元格参数 = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT);
-            断开按钮 = new Button(this);
-            断开按钮.setText("断开\n连接");
-            单元格参数.gravity = Gravity.CENTER;
-            断开按钮.setLayoutParams(单元格参数);
-            断开按钮.setPadding(6, 0, 6, 0);
-            断开按钮.setTag(Content[3 * i]);
-            断开按钮.setOnClickListener(new Button.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-//                    设置初始页面();
-                    dialog.dismiss();
-                    new netInteract().execute(view.getTag().toString(), "断开指定连接");
-                }
-            });
-            tableRow.addView(断开按钮);
-            if (tableLayout != null) {
-                tableLayout.addView(tableRow);
-            }
-        }
-    }*/
 
     /**
      * 保存学号到文件
@@ -502,7 +442,7 @@ public class MainActivity extends AppCompatActivity {
     protected void writeFile() {
         final File 文件 = new File(getExternalFilesDir(null), "user.ini");
         try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(文件))) {
-            for (data.userInfo 学生 : 学生信息) {
+            for (netConectingData.userInfo 学生 : 学生信息) {
                 bufferedWriter.write(学生.学号);
                 bufferedWriter.newLine();
                 bufferedWriter.write(学生.密码);
@@ -517,7 +457,7 @@ public class MainActivity extends AppCompatActivity {
     protected void 设置列表() {
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        for (data.userInfo item : 学生信息) adapter.add(item.学号);
+        for (netConectingData.userInfo item : 学生信息) adapter.add(item.学号);
         学号.setAdapter(adapter);
     }
 }
