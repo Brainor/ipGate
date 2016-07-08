@@ -24,7 +24,7 @@ public class disconnectSpecifiedConnection extends AppCompatActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.disconnect);
-        Content = getIntent().getStringArrayExtra("content");
+        Content = getIntent().getStringArrayExtra("content");//传入变量是String
         final TableLayout tableLayout = (TableLayout) findViewById(R.id.表格);
         int IP数量 = Content.length / 3;
 

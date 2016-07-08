@@ -391,7 +391,7 @@ public class MainActivity extends AppCompatActivity {
                         switch (错误信息) {
                             case "您打开的网络连接已经达到设定的连接数，网络连接失败。请断开全部连接，重新登录。":
                                 连接信息.命令 = 连接类型[3];
-                                contentSplit.addAll(web.连接(连接信息));
+                                contentSplit.addAll(0, web.连接(连接信息));//在最后加上错误信息, 与直接点击按钮区分开
                         }
                 }
                 return contentSplit;
@@ -422,8 +422,21 @@ public class MainActivity extends AppCompatActivity {
             case "error":
                 String 错误信息 = contentSplit.get(0)[1];
                 UI显示_textview.setText(错误信息);//直接显示错误信息, 只有一条list
+                switch (错误信息) {
+                    case "您打开的网络连接已经达到设定的连接数，网络连接失败。请断开全部连接，重新登录。":
+                        if (contentSplit.size() == 2) {//获得了连接数据
+
+                        }
+                }
+
+
                 return;
             case "succ":
+                if (Objects.equals(连接信息.命令, 连接类型[3])) {
+                    if (contentSplit.size() == 2)
+                        UI显示_textview.setText(contentSplit.get(1)[1]);//如果是点连接, 超过连接数, 需要注明
+                    断开指定连接(getCurrentFocus(), contentSplit.get(0)[1]);
+                }
                 contentSplit.remove(0);//删去成功信息
             default:
                 String 显示文本 = "";
@@ -431,31 +444,18 @@ public class MainActivity extends AppCompatActivity {
                 UI显示_textview.setText(显示文本);
                 return;
         }
-        if (Objects.equals(contentSplit[0], "错误")) {
-            UI显示_textview.setText(contentSplit[1]);
-            return;
-        }
-        if (contentSplit[0].contains("YES"))//(断开)连接成功, 显示信息
-        {
-            String 显示文本 = "";
-            for (int i = 1; i < contentSplit.length; i++) {
-                显示文本 += contentSplit[i] + "\n";
-            }
-//            UI显示_textview.setMovementMethod(ScrollingMovementMethod.getInstance());//滚动
-            UI显示_textview.setText(显示文本);
-        } else {//连接失败
-//            断开指定连接(Content);
-            Intent 断开指定连接界面 = new Intent(this, disconnectSpecifiedConnection.class);
-            断开指定连接界面.putExtra("content", contentSplit);
-            startActivityForResult(断开指定连接界面, 0);
-        }
     }
 
+    private void 断开指定连接(View view, String message){
+        Intent 断开指定连接界面 = new Intent(view.getContext(), disconnectSpecifiedConnection.class);
+        断开指定连接界面.putExtra("content", message);
+        startActivityForResult(断开指定连接界面, 0);
+    }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == Activity.RESULT_OK && requestCode == 0) {
             连接信息.ip地址 = data.getStringExtra("IP");
-            连接信息.命令 = "disconnect";
+            连接信息.命令 = 连接类型[4];
             new netInteract().execute();
         }
     }
