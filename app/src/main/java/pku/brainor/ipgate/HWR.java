@@ -24,15 +24,15 @@ import java.util.regex.Pattern;
 
 import static android.text.TextUtils.join;
 
-class network extends netConectingData {
+class network extends netConnectingData {
     public network() {
         CookieHandler.setDefault(new CookieManager());
         ((CookieManager) CookieHandler.getDefault()).setCookiePolicy(CookiePolicy.ACCEPT_ALL);
     }
 
-    public String[] 连接() {
-        String[] 响应数据 = 建立连接("https://its.pku.edu.cn/cas/ITSClient", 连接信息.postData());
-        return 返回信息(响应数据[1]);
+    public ArrayList<String[]> 连接(netConnectingData 连接信息) {
+        String ResponseFromServer = 建立连接("https://its.pku.edu.cn/cas/ITSClient", 连接信息.postData());
+        return 信息分割(ResponseFromServer);
     }
 
     /**
@@ -42,18 +42,18 @@ class network extends netConectingData {
      * @param postData POST方法的数据
      * @return 错误的话, 第一个值为"错误", 第二个值为错误信息; 正确的话, 第一个值为"正确", 第二个值为网页信息.
      */
-    public String[] 建立连接(String URL, String postData) {
+    public String 建立连接(String URL, String postData) {
         java.net.URL url;
         try {
             url = new java.net.URL(URL);
         } catch (MalformedURLException e) {
-            return new String[]{"错误", e.getMessage()};
+            return "{\"error\":\"" + e.getMessage() + "\"}\n";
         }
         HttpURLConnection request;
         try {
             request = (HttpURLConnection) url.openConnection();
         } catch (IOException e) {
-            return new String[]{"错误", e.getMessage()};
+            return "{\"error\":\"" + e.getMessage() + "\"}\n";
         }
 
         request.setRequestProperty("Cookie", join(";", ((CookieManager) CookieHandler.getDefault()).getCookieStore().getCookies()));
@@ -70,10 +70,10 @@ class network extends netConectingData {
                     dataOutputStream.flush();
                 }
             } catch (IOException e) {
-                return new String[]{"错误", e.getMessage()};
+                return "{\"error\":\"" + e.getMessage() + "\"}\n";
             }
         }
-//分析网页部分
+        //分析网页部分
         String line, ResponseFromServer = "";
         try {
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(request.getInputStream()));
@@ -81,33 +81,27 @@ class network extends netConectingData {
                 ResponseFromServer += line + "\n";
             }
         } catch (IOException e) {
-            return new String[]{"错误", e.getMessage()};
+            return "{\"error\":\"" + e.getMessage() + "\"}\n";
         }
         request.disconnect();
-        return new String[]{"成功", ResponseFromServer};
+        return ResponseFromServer;
     }
 
-    public String[] 返回信息(String 文档) {
-        int i = 文档.indexOf("<!--IPGWCLIENT_START ") + 21;
-        if (i == 20) {
-            return new String[]{"错误", "用户名或者密码错误"};
+    /**
+     * 将字符串变成字符串数组的形式, 以及翻译成中文<p>
+     * 形式为<p>
+     * {"succ":"","ver":"IPGWiOS1.1_IPGWAndroid1.0","CONNECTIONS":"1","IP":"162.105.13.91"}\n
+     * @param Content 服务器返回的信息
+     * @return 填入UI的字符串数组
+     */
+    public ArrayList<String[]> 信息分割(String Content) {
+        Content = Content.replaceAll("\\{\\\"|\\\"\\}\\n", "");
+        String[] contentSplit = Content.split("\",\"");
+        ArrayList<String[]> contentDoubleSplit = new ArrayList<>();
+        for (String splitPiece : contentSplit) {
+            contentDoubleSplit.add(splitPiece.split("\":\"", 2));
         }
-        int j = 文档.indexOf(" IPGWCLIENT_END-->");
-        String Content = 文档.substring(i, j);
-        if (Content.contains("SUCCESS=NO"))//出现了各种问题
-        {
-            Matcher matcher = Pattern.compile("(?<=REASON=).*").matcher(Content);
-            matcher.find();
-            String 原因 = matcher.group();
-            switch (原因) {
-                case "当前连接数超过预定值":
-                    return 获得IP(文档);
-                default://不是当前的原因
-                    return new String[]{"错误", 原因};
-            }
-        } else {
-            return 信息翻译(Content);
-        }
+        return contentDoubleSplit;
     }
 
     /**
@@ -166,7 +160,7 @@ class network extends netConectingData {
 
 }
 
-class netConectingData {//数据
+class netConnectingData {//数据
     public userInfo 学生;
     public String 类型="free";
     public String 命令;
@@ -196,6 +190,4 @@ class netConectingData {//数据
             this.密码 = 密码;
         }
     }
-    public static netConectingData 连接信息;
-
 }

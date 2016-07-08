@@ -49,13 +49,14 @@ import java.util.Objects;
  * "cmd=close"//断开本地连接
  */
 public class MainActivity extends AppCompatActivity {
-    ArrayList<netConectingData.userInfo> 学生信息 = new ArrayList<>();
+    ArrayList<netConnectingData.userInfo> 学号s_spinner = new ArrayList<>();
+    netConnectingData 连接信息 = new netConnectingData();
     network web = new network();
     //各种按钮
-    Switch 地址转换;
-    TextView textBlock;
+    Switch 地址转换_switch;
+    TextView UI显示_textview;
     Button[] button = new Button[3];
-    Spinner 学号;
+    Spinner 学号_spinner;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -75,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
                     String 学号;
                     while ((学号 = bufferedReader.readLine()) != null) {
                         if (Objects.equals(学号, "")) break;
-                        学生信息.add(new netConectingData.userInfo(学号, bufferedReader.readLine()));
+                        学号s_spinner.add(new netConnectingData.userInfo(学号, bufferedReader.readLine()));
                     }
                 }
             } else {
@@ -84,9 +85,9 @@ public class MainActivity extends AppCompatActivity {
         } catch (IOException e) {
             Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
         }
-        /*学生信息.add(new netConectingData.userInfo("1301110110", "Oudanyi6456"));
-        学生信息.add(new netConectingData.userInfo("gcuspea", "phyfsc508"));*/
-        if (学生信息.size() == 0) {
+        /*学号s_spinner.add(new netConnectingData.userInfo("1301110110", "Oudanyi6456"));
+        学号s_spinner.add(new netConnectingData.userInfo("gcuspea", "phyfsc508"));*/
+        if (学号s_spinner.size() == 0) {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setMessage("没有学号信息, 请添加.")
                     .setPositiveButton("添加学号", new DialogInterface.OnClickListener() {
@@ -105,12 +106,12 @@ public class MainActivity extends AppCompatActivity {
         }
         // Get our button from the layout resource,
         // and attach an event to it
-        地址转换 = (Switch) findViewById(R.id.地址转换);
-        textBlock = (TextView) findViewById(R.id.信息文本);
+        地址转换_switch = (Switch) findViewById(R.id.地址转换);
+        UI显示_textview = (TextView) findViewById(R.id.信息文本);
         button[0] = (Button) findViewById(R.id.button1);
         button[1] = (Button) findViewById(R.id.button2);
         button[2] = (Button) findViewById(R.id.button3);
-        学号 = (Spinner) findViewById(R.id.学生信息);
+        学号_spinner = (Spinner) findViewById(R.id.学生信息);
 
         设置列表();
 
@@ -123,8 +124,9 @@ public class MainActivity extends AppCompatActivity {
             });
     }
 
-    /**
+ /*   *//**
      * 暂时有问题
+     *
      *//*
     @Override
     protected void onResume() {
@@ -281,7 +283,7 @@ public class MainActivity extends AppCompatActivity {
     protected void 学号信息() {
         final ListView 学号view = new ListView(this);
         ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_expandable_list_item_1);
-        for (netConectingData.userInfo 学生 : 学生信息) arrayAdapter.add(学生.学号);
+        for (netConnectingData.userInfo 学生 : 学号s_spinner) arrayAdapter.add(学生.学号);
         registerForContextMenu(学号view);
         学号view.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener() {
             @Override
@@ -298,7 +300,7 @@ public class MainActivity extends AppCompatActivity {
                                     学号操作(index);
                                     break;
                                 case R.id.删除:
-                                    学生信息.remove(index);
+                                    学号s_spinner.remove(index);
                                     writeFile();
                                     break;
                             }
@@ -342,8 +344,8 @@ public class MainActivity extends AppCompatActivity {
         final TextView 密码view = (TextView) 添加用户view.findViewById(R.id.密码);
         final int index = i;
         if (i >= 0) {//修改已有信息
-            学号view.setText(学生信息.get(index).学号);
-            密码view.setText(学生信息.get(index).密码);
+            学号view.setText(学号s_spinner.get(index).学号);
+            密码view.setText(学号s_spinner.get(index).密码);
         }
         final AlertDialog dialog = builder.setView(添加用户view)
                 .setPositiveButton("确定", new DialogInterface.OnClickListener() {
@@ -355,8 +357,8 @@ public class MainActivity extends AppCompatActivity {
                             Toast.makeText(getApplicationContext(), "输入正确学号和密码", Toast.LENGTH_LONG).show();
                             return;
                         }
-                        if (index >= 0) 学生信息.set(index, new netConectingData.userInfo(学号, 密码));
-                        else 学生信息.add(new netConectingData.userInfo(学号, 密码));
+                        if (index >= 0) 学号s_spinner.set(index, new netConnectingData.userInfo(学号, 密码));
+                        else 学号s_spinner.add(new netConnectingData.userInfo(学号, 密码));
                         writeFile();
                     }
                 })
@@ -377,52 +379,74 @@ public class MainActivity extends AppCompatActivity {
     */
     static final String[] 连接类型 = new String[]{"open", "close", "closeall", "getconnections", "disconnect"};//连接, 断开连接, 断开所有连接, 获取连接状态, 断开指定连接
 
-    public class netInteract extends AsyncTask<Void, Void, String[]> {//网络交互
+    public class netInteract extends AsyncTask<netConnectingData, Void, ArrayList<String[]>> {//网络交互
 
         @Override
-        protected String[] doInBackground(Void... URLs) {
-            if (URLs.length == 1) {//是一开始的连接
-                try {
-                    return web.连接();
-                } catch (Exception e) {
-                    e.printStackTrace();
+        protected ArrayList<String[]> doInBackground(netConnectingData... 连接信息s) {
+            try {
+                ArrayList<String[]> contentSplit = web.连接(连接信息s[0]);
+                switch (contentSplit.get(0)[0]) {//错误处理
+                    case "error":
+                        String 错误信息 = contentSplit.get(0)[1];
+                        switch (错误信息) {
+                            case "您打开的网络连接已经达到设定的连接数，网络连接失败。请断开全部连接，重新登录。":
+                                连接信息.命令 = 连接类型[3];
+                                contentSplit.addAll(web.连接(连接信息));
+                        }
                 }
+                return contentSplit;
+            } catch (Exception e) {
+                ArrayList<String[]> 错误信息 = new ArrayList<>();
+                错误信息.add(new String[]{"error", e.getMessage()});
+                return 错误信息;
             }
-            return new String[]{"错误"};
         }
 
         @Override
-        protected void onPostExecute(String[] Content) {
+        protected void onPostExecute(ArrayList<String[]> Content) {
             判断(Content);
         }
     }
 
     private void 连接(View view) {
-        netConectingData.连接信息.学生 = 学生信息.get(学号.getSelectedItemPosition());
+        连接信息.学生 = 学号s_spinner.get(学号_spinner.getSelectedItemPosition());
         //确定免费/收费地址
-        netConectingData.连接信息.类型 = 地址转换.isChecked() ? "fee" : "free";
-        netConectingData.连接信息.ip地址 = "";
-        netConectingData.连接信息.命令 = 连接类型[Short.parseShort(view.getTag().toString())];
-        new netInteract().execute();
+        连接信息.类型 = 地址转换_switch.isChecked() ? "fee" : "free";
+        连接信息.ip地址 = "";
+        连接信息.命令 = 连接类型[Short.parseShort(view.getTag().toString())];
+        new netInteract().execute(连接信息);
     }
 
-    private void 判断(String[] Content) {
-        if (Objects.equals(Content[0], "错误")) {
-            textBlock.setText(Content[1]);
+    private void 判断(ArrayList<String[]> contentSplit) {
+        switch (contentSplit.get(0)[0]) {
+            case "error":
+                String 错误信息 = contentSplit.get(0)[1];
+                UI显示_textview.setText(错误信息);//直接显示错误信息, 只有一条list
+                return;
+            case "succ":
+                contentSplit.remove(0);//删去成功信息
+            default:
+                String 显示文本 = "";
+                for (String[] content : contentSplit) 显示文本 += content[0] + ":" + content[1] + "\n";
+                UI显示_textview.setText(显示文本);
+                return;
+        }
+        if (Objects.equals(contentSplit[0], "错误")) {
+            UI显示_textview.setText(contentSplit[1]);
             return;
         }
-        if (Content[0].contains("YES"))//(断开)连接成功, 显示信息
+        if (contentSplit[0].contains("YES"))//(断开)连接成功, 显示信息
         {
             String 显示文本 = "";
-            for (int i = 1; i < Content.length; i++) {
-                显示文本 += Content[i] + "\n";
+            for (int i = 1; i < contentSplit.length; i++) {
+                显示文本 += contentSplit[i] + "\n";
             }
-//            textBlock.setMovementMethod(ScrollingMovementMethod.getInstance());//滚动
-            textBlock.setText(显示文本);
+//            UI显示_textview.setMovementMethod(ScrollingMovementMethod.getInstance());//滚动
+            UI显示_textview.setText(显示文本);
         } else {//连接失败
 //            断开指定连接(Content);
             Intent 断开指定连接界面 = new Intent(this, disconnectSpecifiedConnection.class);
-            断开指定连接界面.putExtra("content", Content);
+            断开指定连接界面.putExtra("content", contentSplit);
             startActivityForResult(断开指定连接界面, 0);
         }
     }
@@ -430,8 +454,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == Activity.RESULT_OK && requestCode == 0) {
-            netConectingData.连接信息.ip地址 = data.getStringExtra("IP");
-            netConectingData.连接信息.命令 = "disconnect";
+            连接信息.ip地址 = data.getStringExtra("IP");
+            连接信息.命令 = "disconnect";
             new netInteract().execute();
         }
     }
@@ -442,7 +466,7 @@ public class MainActivity extends AppCompatActivity {
     protected void writeFile() {
         final File 文件 = new File(getExternalFilesDir(null), "user.ini");
         try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(文件))) {
-            for (netConectingData.userInfo 学生 : 学生信息) {
+            for (netConnectingData.userInfo 学生 : 学号s_spinner) {
                 bufferedWriter.write(学生.学号);
                 bufferedWriter.newLine();
                 bufferedWriter.write(学生.密码);
@@ -457,7 +481,7 @@ public class MainActivity extends AppCompatActivity {
     protected void 设置列表() {
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        for (netConectingData.userInfo item : 学生信息) adapter.add(item.学号);
-        学号.setAdapter(adapter);
+        for (netConnectingData.userInfo item : 学号s_spinner) adapter.add(item.学号);
+        学号_spinner.setAdapter(adapter);
     }
 }
