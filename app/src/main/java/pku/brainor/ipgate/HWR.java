@@ -14,11 +14,7 @@ import java.net.CookiePolicy;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.nio.charset.StandardCharsets;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,7 +28,7 @@ class network extends netConnectingData {
 
     public ArrayList<String[]> 连接(netConnectingData 连接信息) {
         String ResponseFromServer = 建立连接("https://its.pku.edu.cn/cas/ITSClient", 连接信息.postData());
-        return 信息分割(ResponseFromServer);
+        return 信息分割(信息翻译(ResponseFromServer));
     }
 
     /**
@@ -95,67 +91,39 @@ class network extends netConnectingData {
      * @return 填入UI的字符串数组
      */
     public ArrayList<String[]> 信息分割(String Content) {
-        Content = Content.replaceAll("\\{\\\"|\\\"\\}\\n", "");
-        String[] contentSplit = Content.split("\",\"");
+        Content = Content.replaceAll("\\{\\\"|\"\\}\\n", "");//去掉首尾{", "}\n
+        String[] contentSplit = Content.split("\",\"");//利用","分隔
         ArrayList<String[]> contentDoubleSplit = new ArrayList<>();
         for (String splitPiece : contentSplit) {
-            contentDoubleSplit.add(splitPiece.split("\":\"", 2));
+            contentDoubleSplit.add(splitPiece.split("\":\"", 2));//每个List用":"分隔
         }
         return contentDoubleSplit;
     }
 
-    /**
-     * 超过最大连接数后, 得到IP地址
-     *
-     * @param 文档 利用文档里的信息获得IP地址
-     * @return 字符串数组, 第一项不是"正确"也不是"错误"
-     */
-    public String[] 获得IP(String 文档) {
-        String IP地址 = 文档;
-        //断开指定连接
-        List<String> IPList = new ArrayList<>();
-        Matcher matcher = Pattern.compile("(?<=td2>)[^<].*?(?=</td>)").matcher(IP地址);
-        while (matcher.find()) {
-            IPList.add(matcher.group());
-        }
-        String[] IP = IPList.toArray(new String[IPList.size()]);//IP,免费,时间
 
-        Date 时间;
-        try {
-            for (int i = 0; i < IP.length / 3; i++) {
 
-                时间 = new SimpleDateFormat("y-MM-dd kk:mm:ss.S").parse(IP[i * 3 + 2]);
-                IP[3 * i + 2] = new SimpleDateFormat("M-d H:mm:ss").format(时间);
-            }
-        } catch (ParseException e) {
-            return new String[]{"错误", e.getMessage()};
-        }
-        return IP;
-    }
-
-    private String[] 信息翻译(String Content) {
-        Content = Content.replace("STATE=", "状态\t");
-        Content = Content.replace("connected", "已连接");
-        Content = Content.replace("USERNAME=", "用户名\t");
-        Content = Content.replaceAll("FIXRATE=\\S*\\s", "");
-        Content = Content.replace("FR_DESC_CN=", "包月状态\t");
-        Content = Content.replaceAll("FR_DESC_EN=\\S*\\s", "");
-        Matcher matcher = Pattern.compile("(?<=FR_TIME=)[\\d\\.]*+").matcher(Content);
-        if (matcher.find()) {
-            String 时长 = matcher.group();
-            if (时长.length() > 0) {//后期添加吧
-
+    private String 信息翻译(String Content) {
+        Content = Content.replaceAll("\"ver.*?,", "");
+        Content = Content.replaceAll("\"FIXRATE.*?,", "");
+        Content = Content.replace("FR_DESC_CN", "包月状态");
+        Content = Content.replaceAll("\"FR_DESC_EN.*?,", "");
+        Matcher matcher = Pattern.compile("(?<=FR_TIME_CN\":\")\\d++\\.\\d++").matcher(Content);
+        if (matcher.find()) {//java.time.Duration duration;不支持JDK8
+            double 时长 = Double.parseDouble(matcher.group());
+            if (时长 > 0) {//后期添加吧
+                double 分钟 = (时长 - Math.floor(时长)) * 60;
+                Content = matcher.replaceFirst(String.valueOf((int) Math.floor(时长)) + "时" + String.valueOf((int) Math.floor(分钟)) + "分");
             }
         }
-        Content = Content.replace("FR_TIME=", "包月剩余时长\t");
-        Content = Content.replace("SCOPE=", "访问范围\t");
+        Content = Content.replace("FR_TIME_CN", "包月剩余时长");
+        Content = Content.replaceAll("\"FR_TIME_EN.*?,", "");
+        Content = Content.replace("SCOPE", "访问范围");
         if (Content.contains("domestic")) Content = Content.replace("domestic", "免费流量");
         else Content = Content.replace("international", "收费流量");
-        Content = Content.replace("CONNECTIONS=", "当前连接数\t");
-        Content = Content.replace("BALANCE=", "余额\t");
-        Content = Content.replace("IP=", "IP地址\t");
-        Content = Content.replace("MESSAGE=", "信息\t");
-        return Content.split(" ");//这个地方的空格控制, listview?http://techlovejump.com/android-multicolumn-listview/
+        Content = Content.replace("CONNECTIONS", "当前连接数");
+        Content = Content.replace("BALANCE_CN", "余额");
+        Content = Content.replaceAll("\"BALANCE_EN.*?,", "");
+        return Content;
     }
 
 }

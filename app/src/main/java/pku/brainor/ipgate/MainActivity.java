@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
+import android.net.wifi.WifiEnterpriseConfig;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -32,6 +33,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.Inet4Address;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
@@ -41,13 +44,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-/**
- * 新的API
- * web.建立连接("https://its.pku.edu.cn/cas/ITSClient", "cmd=getconnections&username=1301110110&password=Oudanyi6456");//closeall 显示连接情况, 断开所有链接
- * "cmd=open&username=" + username + "&password=" + password + "&iprange=" + fee或者free + "&ip=", //打开指定连接, 打开这个连接就ip=就可以
- * "cmd=disconnect&username=" + username + "&password=" + password + "&ip="//断开指定连接
- * "cmd=close"//断开本地连接
- */
 public class MainActivity extends AppCompatActivity {
     ArrayList<netConnectingData.userInfo> 学号s_spinner = new ArrayList<>();
     netConnectingData 连接信息 = new netConnectingData();
@@ -63,11 +59,10 @@ public class MainActivity extends AppCompatActivity {
         设置初始页面();
     }
 
-    void 设置初始页面() {
+    void 设置初始页面(){
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
         //增加用户信息列表
         final File 文件 = new File(getExternalFilesDir(null), "user.ini");
         try {
@@ -122,6 +117,15 @@ public class MainActivity extends AppCompatActivity {
                     连接(view);
                 }
             });
+        button[1].setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                view.setTag("3");
+                连接(view);
+                Toast.makeText(getApplicationContext(), "断开指定连接", Toast.LENGTH_LONG).show();
+                return true;
+            }
+        });
     }
 
  /*   *//**
@@ -262,14 +266,15 @@ public class MainActivity extends AppCompatActivity {
                 }.execute();
                 return true;
             case R.id.关于:
-                builder.setMessage("作者:Brainor\n联系方式:Brainor@qq.com")
-                        .setTitle("关于")
-                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-
-                            }
-                        });
+                builder.setMessage("连接北大网关.\n" +
+                        "版本更新:\n" +
+                        "v1.4\n" +
+                        "  使用学校API\n" +
+                        "  长按断开连接可以断开指定连接" +
+                        "\n\n" +
+                        "作者:Brainor\n" +
+                        "联系方式:Brainor@qq.com")
+                        .setTitle("关于");
                 builder.create().show();
                 return true;
             default:
@@ -415,6 +420,7 @@ public class MainActivity extends AppCompatActivity {
         连接信息.ip地址 = "";
         连接信息.命令 = 连接类型[Short.parseShort(view.getTag().toString())];
         new netInteract().execute(连接信息);
+        if (Objects.equals(view.getTag().toString(), "3")) view.setTag("1");
     }
 
     private void 判断(ArrayList<String[]> contentSplit) {
@@ -422,32 +428,33 @@ public class MainActivity extends AppCompatActivity {
             case "error":
                 String 错误信息 = contentSplit.get(0)[1];
                 UI显示_textview.setText(错误信息);//直接显示错误信息, 只有一条list
-                switch (错误信息) {
+                /*switch (错误信息) {
                     case "您打开的网络连接已经达到设定的连接数，网络连接失败。请断开全部连接，重新登录。":
                         if (contentSplit.size() == 2) {//获得了连接数据
 
                         }
-                }
+                }*/
 
 
-                return;
+                break;
             case "succ":
                 if (Objects.equals(连接信息.命令, 连接类型[3])) {
                     if (contentSplit.size() == 2)
                         UI显示_textview.setText(contentSplit.get(1)[1]);//如果是点连接, 超过连接数, 需要注明
-                    断开指定连接(getCurrentFocus(), contentSplit.get(0)[1]);
+                    断开指定连接(contentSplit.get(0)[1]);
+                    break;//不需后续处理, 因为直接弹出对话框
                 }
-                contentSplit.remove(0);//删去成功信息
+                if (Objects.equals(contentSplit.get(0)[1], "")) contentSplit.remove(0);//删去成功信息
             default:
                 String 显示文本 = "";
                 for (String[] content : contentSplit) 显示文本 += content[0] + ":" + content[1] + "\n";
                 UI显示_textview.setText(显示文本);
-                return;
+                break;
         }
     }
 
-    private void 断开指定连接(View view, String message){
-        Intent 断开指定连接界面 = new Intent(view.getContext(), disconnectSpecifiedConnection.class);
+    private void 断开指定连接(String message){
+        Intent 断开指定连接界面 = new Intent(this, disconnectSpecifiedConnection.class);
         断开指定连接界面.putExtra("content", message);
         startActivityForResult(断开指定连接界面, 0);
     }
