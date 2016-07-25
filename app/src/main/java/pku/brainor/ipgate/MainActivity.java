@@ -46,7 +46,7 @@ import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
     ArrayList<netConnectingData.userInfo> 学号s_spinner = new ArrayList<>();
-    netConnectingData 连接信息 = new netConnectingData();
+    public netConnectingData 连接信息 = new netConnectingData();
     network web = new network();
     //各种按钮
     Switch 地址转换_switch;
@@ -463,7 +463,7 @@ public class MainActivity extends AppCompatActivity {
         if (resultCode == Activity.RESULT_OK && requestCode == 0) {
             连接信息.ip地址 = data.getStringExtra("IP");
             连接信息.命令 = 连接类型[4];
-            new netInteract().execute();
+            new netInteract().execute(连接信息);
         }
     }
 
