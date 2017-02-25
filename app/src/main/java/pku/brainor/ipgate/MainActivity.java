@@ -4,12 +4,13 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
-import android.net.wifi.WifiEnterpriseConfig;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -33,8 +34,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.Inet4Address;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
@@ -43,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
     ArrayList<netConnectingData.userInfo> 学号s_spinner = new ArrayList<>();
@@ -101,13 +101,24 @@ public class MainActivity extends AppCompatActivity {
         }
         // Get our button from the layout resource,
         // and attach an event to it
-        地址转换_switch = (Switch) findViewById(R.id.地址转换);
         UI显示_textview = (TextView) findViewById(R.id.信息文本);
         button[0] = (Button) findViewById(R.id.button1);
         button[1] = (Button) findViewById(R.id.button2);
         button[2] = (Button) findViewById(R.id.button3);
         学号_spinner = (Spinner) findViewById(R.id.学生信息);
 
+        //设置token
+
+        SharedPreferences preferences = getSharedPreferences("preference_file_key", Activity.MODE_PRIVATE);
+//        preferences.edit().putString("token", "IPGWAndroid1.4_Xiaomi7.0_fc53be1c-57f6-4d3b-9e59-75cd3280f416").apply();//之后注释掉
+        netConnectingData.userInfo.token = preferences.getString("token", "");
+        if (netConnectingData.userInfo.token.isEmpty()) {
+            String token = "IPGWAndroid1.4_";
+            token += Build.BRAND.replace(" ", "_") + Build.VERSION.RELEASE + "_";
+            token += UUID.randomUUID().toString();
+            preferences.edit().putString("token", token).apply();
+            netConnectingData.userInfo.token = token;
+        }
         设置列表();
 
         for (Button item : button)
@@ -268,9 +279,11 @@ public class MainActivity extends AppCompatActivity {
             case R.id.关于:
                 builder.setMessage("连接北大网关.\n" +
                         "版本更新:\n" +
+                        "v1.5\n" +
+                        "   添加user-agent" +
                         "v1.4\n" +
-                        "  使用学校API\n" +
-                        "  长按断开连接可以断开指定连接" +
+                        "   使用学校API\n" +
+                        "   长按断开连接可以断开指定连接" +
                         "\n\n" +
                         "作者:Brainor\n" +
                         "联系方式:Brainor@qq.com")
@@ -377,10 +390,24 @@ public class MainActivity extends AppCompatActivity {
         dialog.show();
     }
 
-    /* web.建立连接("https://its.pku.edu.cn/cas/ITSClient", "cmd=getconnections&username=1301110110&password=Oudanyi6456");//closeall 显示连接情况, 断开所有链接
-    * "cmd=open&username=" + username + "&password=" + password + "&iprange=" + fee或者free + "&ip=", //打开指定连接, 打开这个连接就ip=就可以
-    * "cmd=disconnect&username=" + username + "&password=" + password + "&ip="//断开指定连接
-    * "cmd=close"//断开本地连接
+    /* web.建立连接("https://its.pku.edu.cn/cas/ITSClient", "cmd=getconnections&username=1301110110&password=Oudanyi6456&lang=");//closeall 显示连接情况, 断开所有链接
+    * 返回: {"succ":"162..105.13.191;收费;物理楼;2017-02-20 12:24:27;10.128.130.230;收费;畅新2号楼;2017-02-25 02:25:24;10.128.131.126;收费;畅新2号楼;2017-02-25 03:22:01"}
+    * "cmd=open&username=" + username + "&password=" + password + "&iprange=fee&ip="+ip+ "&lang=&app=IPGWAndrroid1.4_Xiaomi7.0_fc53be1c-57f6-4d3b-9e59-75cd3280f416"//打开指定连接, 打开这个连接就ip=就可以
+    * {"succ":"",ver":"1.1","FIXRATE":"YES","FR_TYPE":"","FR_DESC_CN":"不限时间","FR_DESC_EN":"Unlimited","SCOPE":"international","DEFICIT":"","FR_TIME_CN":"","FR_TIME_EN":"Unlimited","CONNECTIONS":"3","BALANCE_CN":"151.468","BALANCE_EN":"151.468","IP":"10.128.131.126"}
+    * "cmd=disconnect&username=" + username + "&password=" + password + "&ip="+ip+"&lang="//断开指定连接
+    * {"succ":"断开连接成功"}
+    * "cmd=close&lang="//断开本地连接//{"succ":"close_OK"}
+    *
+    * content-type: application/x-www-form-urlencoded; charset=utf-8
+    * User-Agent: IPGWAndrroid1.4_Xiaomi7.0_fc53be1c-57f6-4d3b-9e59-75cd3280f416
+    * Connection: Keep-Alive
+    * Accept-Encoding: gzip
+    *
+    * Xiaomi: Build.BRAND or na, 空格用_代替
+    * 7.0: Build.VERSION.RELEASE or na
+    * 很长一串是UUID.randomUUID().toString()
+    * SharedPreferences localSharedPreferences = paramContext.getSharedPreferences("preference_file_key", 0);
+    * Object localObject = localSharedPreferences.getString("store_install_id", ""); ip的值储存在: store_latest_ip;
     */
     static final String[] 连接类型 = new String[]{"open", "close", "closeall", "getconnections", "disconnect"};//连接, 断开连接, 断开所有连接, 获取连接状态, 断开指定连接
 
@@ -414,9 +441,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void 连接(View view) {
-        连接信息.学生 = 学号s_spinner.get(学号_spinner.getSelectedItemPosition());
-        //确定免费/收费地址
-        连接信息.类型 = 地址转换_switch.isChecked() ? "fee" : "free";
+        netConnectingData.学生 = 学号s_spinner.get(学号_spinner.getSelectedItemPosition());
         连接信息.ip地址 = "";
         连接信息.命令 = 连接类型[Short.parseShort(view.getTag().toString())];
         new netInteract().execute(连接信息);

@@ -5,8 +5,8 @@ android {
     buildToolsVersion '25.0.2'
     defaultConfig {
         applicationId 'pku.brainor.ipgate'
-        minSdkVersion 19
-        targetSdkVersion 22
+        minSdkVersion 22
+        targetSdkVersion 24
         versionCode 9
         versionName "1.4"
     }
@@ -29,6 +29,6 @@ android {
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:25.1.0'
-    compile 'com.android.support:design:25.1.0'
+    compile 'com.android.support:appcompat-v7:25.2.0'
+    compile 'com.android.support:design:25.2.0'
 }

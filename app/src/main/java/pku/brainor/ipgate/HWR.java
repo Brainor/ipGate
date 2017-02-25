@@ -5,6 +5,8 @@ package pku.brainor.ipgate;
  * Edited by 欧伟科 on 2016/5/18.
  */
 
+import android.content.SharedPreferences;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -21,12 +23,12 @@ import java.util.regex.Pattern;
 import static android.text.TextUtils.join;
 
 class network extends netConnectingData {
-    public network() {
+    network() {
         CookieHandler.setDefault(new CookieManager());
         ((CookieManager) CookieHandler.getDefault()).setCookiePolicy(CookiePolicy.ACCEPT_ALL);
     }
 
-    public ArrayList<String[]> 连接(netConnectingData 连接信息) {
+    ArrayList<String[]> 连接(netConnectingData 连接信息) {
         String ResponseFromServer = 建立连接("https://its.pku.edu.cn/cas/ITSClient", 连接信息.postData());
         return 信息分割(信息翻译(ResponseFromServer));
     }
@@ -38,7 +40,7 @@ class network extends netConnectingData {
      * @param postData POST方法的数据
      * @return 错误的话, 第一个值为"错误", 第二个值为错误信息; 正确的话, 第一个值为"正确", 第二个值为网页信息.
      */
-    public String 建立连接(String URL, String postData) {
+    private String 建立连接(String URL, String postData) {
         java.net.URL url;
         try {
             url = new java.net.URL(URL);
@@ -56,7 +58,8 @@ class network extends netConnectingData {
         request.setDoInput(true);
         request.setReadTimeout(300000);
         if (!postData.equals("")) {
-            request.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            request.setRequestProperty("Content-Type", "application/x-www-form-urlencoded; charset=utf-8");
+            request.setRequestProperty("User-Agent", userInfo.token);
             request.setDoOutput(true);
             request.setRequestProperty("Content-Length", Integer.toString(postData.length()));
             try {
@@ -90,7 +93,7 @@ class network extends netConnectingData {
      * @param Content 服务器返回的信息
      * @return 填入UI的字符串数组
      */
-    public ArrayList<String[]> 信息分割(String Content) {
+    private ArrayList<String[]> 信息分割(String Content) {
         Content = Content.replaceAll("\\{\\\"|\"\\}\\n", "");//去掉首尾{", "}\n
         String[] contentSplit = Content.split("\",\"");//利用","分隔
         ArrayList<String[]> contentDoubleSplit = new ArrayList<>();
@@ -129,33 +132,34 @@ class network extends netConnectingData {
 }
 
 class netConnectingData {//数据
-    public userInfo 学生;
-    public String 类型="free";
-    public String 命令;
-    public String ip地址;
+    static userInfo 学生;
+    String 命令;
+    String ip地址;
 
-    public String postData() {
+    String postData() {
         switch (命令) {
             case "getconnections":
             case "closeall":
-                return "cmd=" + 命令 + "&username=" + 学生.学号 + "&password=" + 学生.密码;
+                return "cmd=" + 命令 + "&username=" + 学生.学号 + "&password=" + 学生.密码 + "&lang=";
             case "open":
-                return "cmd=" + 命令 + "&username=" + 学生.学号 + "&password=" + 学生.密码 + "&iprange=" + 类型 + "&ip=";
+                return "cmd=" + 命令 + "&username=" + 学生.学号 + "&password=" + 学生.密码 + "&iprange=fee&ip=" + ip地址 + "&lang=" + "&app=" + userInfo.token;
             case "disconnect":
-                return "cmd=" + 命令 + "&username=" + 学生.学号 + "&password=" + 学生.密码 + "&ip=" + ip地址;
+                return "cmd=" + 命令 + "&username=" + 学生.学号 + "&password=" + 学生.密码 + "&ip=" + ip地址 + "&lang=";
             case "close":
-                return "cmd=" + 命令;
             default:
-                return "cmd=" + 命令;
+                return "cmd=" + 命令 + "&lang=";
         }
     }
-    public static class userInfo {//用户信息
-        public String 学号;
-        public String 密码;
 
-        public userInfo(String 学号, String 密码) {
+    static class userInfo {//用户信息
+        String 学号;
+        String 密码;
+        static String token;//IPGWAndrroid1.4_Xiaomi7.0_fc53be1c-57f6-4d3b-9e59-75cd3280f416
+
+        userInfo(String 学号, String 密码) {
             this.学号 = 学号;
             this.密码 = 密码;
+            token = "";
         }
     }
 }

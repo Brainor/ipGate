@@ -32,36 +32,6 @@
             android:spinnerMode="dropdown" />
     </LinearLayout>
 
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:padding="6dp">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="免费地址"
-            android:layout_gravity="center_vertical"
-            android:paddingRight="6dp" />
-
-        <Switch
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/地址转换"
-            android:layout_gravity="center"
-            android:checked="false"
-            android:showText="false" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="收费地址"
-            android:layout_gravity="center_vertical"
-            android:paddingLeft="6dp" />
-    </LinearLayout>
-
     <TextView
         android:layout_width="match_parent"
         android:layout_height="0dp"
