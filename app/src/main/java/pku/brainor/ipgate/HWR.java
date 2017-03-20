@@ -1,12 +1,5 @@
 package pku.brainor.ipgate;
 
-/**
- * Created by 欧伟科 on 2016/4/3.
- * Edited by 欧伟科 on 2016/5/18.
- */
-
-import android.content.SharedPreferences;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -14,7 +7,9 @@ import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
 import java.net.HttpURLConnection;
+import java.net.InetAddress;
 import java.net.MalformedURLException;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
@@ -127,6 +122,18 @@ class network extends netConnectingData {
         Content = Content.replace("CONNECTIONS", "当前连接数");
         Content = Content.replace("BALANCE_CN", "余额");
         Content = Content.replaceAll("\"BALANCE_EN.*?,", "").replaceAll("\"SCOPE.*?,","").replaceAll("\"DEFICIT.*?,","");
+        //增加IP地址判定
+        Matcher matcher=Pattern.compile("(?<=IP\":\")\\d++\\.\\d++\\.\\d++\\.\\d++").matcher(Content);
+        if(matcher.find()){
+            try {
+                InetAddress address = InetAddress.getByName(matcher.group());
+                Content = new StringBuilder(Content).insert(
+                        matcher.end(), (address.isSiteLocalAddress() || address.isLinkLocalAddress()) ? "(本地地址)" : "(公网地址)"
+                ).toString();
+            } catch (UnknownHostException e) {
+                e.printStackTrace();
+            }
+        }
         return Content;
     }
 

@@ -5,10 +5,6 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.Uri;
-import android.net.wifi.ScanResult;
-import android.net.wifi.WifiConfiguration;
-import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -33,10 +29,8 @@ import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -50,22 +44,23 @@ public class MainActivity extends AppCompatActivity {
     TextView UI显示_textview;
     Button[] button = new Button[3];
     Spinner 学号_spinner;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         设置初始页面();
     }
 
-    void 设置初始页面(){
+    void 设置初始页面() {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         //增加用户信息列表
         SharedPreferences preferences = getPreferences(MODE_PRIVATE);
         Set<String> 学生信息 = preferences.getStringSet("student", new HashSet<String>());
-        Iterator<String>iterator=学生信息.iterator();
-        while(iterator.hasNext()){
-            String 学号=iterator.next();
+        Iterator<String> iterator = 学生信息.iterator();
+        while (iterator.hasNext()) {
+            String 学号 = iterator.next();
             学号s_spinner.add(new netConnectingData.userInfo(学号, iterator.next()));
         }
 
@@ -141,9 +136,10 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
- /*   *//**
+ /*   */
+
+    /**
      * 暂时有问题
-     *
      *//*
     @Override
     protected void onResume() {
@@ -161,7 +157,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }, intentFilter);
     }*/
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -179,7 +174,7 @@ public class MainActivity extends AppCompatActivity {
             case R.id.学号信息://明文存储你的用户名和密码
                 学号信息();
                 return true;
-            case R.id.提交位置:
+            /*case R.id.提交位置:
                 //先检查是否连接Wireless PKU
                 final WifiManager wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
                 if(!wifiManager.isWifiEnabled()){//再检查是否打开WiFi
@@ -277,7 +272,7 @@ public class MainActivity extends AppCompatActivity {
                         ((TextView) 提交位置view.findViewById(R.id.子网掩码)).setText(IPAddr[1]);
                     }
                 }.execute();
-                return true;
+                return true;*/
             case R.id.关于:
                 builder.setMessage("连接北大网关.\n" +
                         "版本更新:\n" +
@@ -377,7 +372,8 @@ public class MainActivity extends AppCompatActivity {
                             Toast.makeText(getApplicationContext(), "输入正确学号和密码", Toast.LENGTH_LONG).show();
                             return;
                         }
-                        if (index >= 0) 学号s_spinner.set(index, new netConnectingData.userInfo(学号, 密码));
+                        if (index >= 0)
+                            学号s_spinner.set(index, new netConnectingData.userInfo(学号, 密码));
                         else 学号s_spinner.add(new netConnectingData.userInfo(学号, 密码));
                         writePreferences();
                     }
@@ -475,16 +471,27 @@ public class MainActivity extends AppCompatActivity {
             default:
                 String 显示文本 = "";
                 for (String[] content : contentSplit) 显示文本 += content[0] + ":" + content[1] + "\n";
+                try {
+                    for (InterfaceAddress interfaceAddress : NetworkInterface.getByName("wlan0").getInterfaceAddresses())
+                        if (interfaceAddress.getAddress() instanceof Inet4Address) {
+                            显示文本 += "局域网地址:" + interfaceAddress.getAddress().getHostAddress();
+                            break;
+                        }
+                } catch (SocketException e) {
+                    e.printStackTrace();
+                }
+
                 UI显示_textview.setText(显示文本);
                 break;
         }
     }
 
-    private void 断开指定连接(String message){
+    private void 断开指定连接(String message) {
         Intent 断开指定连接界面 = new Intent(this, disconnectSpecifiedConnection.class);
         断开指定连接界面.putExtra("content", message);
         startActivityForResult(断开指定连接界面, 0);
     }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == Activity.RESULT_OK && requestCode == 0) {
@@ -511,8 +518,8 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }*/
-    protected void writePreferences(){
-        SharedPreferences preferences =getPreferences(MODE_PRIVATE);
+    protected void writePreferences() {
+        SharedPreferences preferences = getPreferences(MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
         HashSet<String> 学生信息 = new HashSet<>();
 
@@ -520,10 +527,11 @@ public class MainActivity extends AppCompatActivity {
             学生信息.add(学生.学号);
             学生信息.add(学生.密码);
         }
-        editor.putStringSet("student",学生信息).apply();
+        editor.putStringSet("student", 学生信息).apply();
         设置列表();
 
     }
+
     protected void 设置列表() {
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);

@@ -33,20 +33,20 @@
             android:layout_column="0"
             android:clickable="false" />
 
-        <TextView
+        <!--<TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:text="访问\n范围"
             android:layout_column="1"
-            android:clickable="false" />
+            android:clickable="false" />-->
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="登录时间"
             android:layout_gravity="center"
-            android:layout_column="2"
+            android:layout_column="1"
             android:clickable="false" />
 
         <TextView
@@ -54,7 +54,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:text="操作"
-            android:layout_column="3"
+            android:layout_column="2"
             android:clickable="false" />
     </TableRow>
 

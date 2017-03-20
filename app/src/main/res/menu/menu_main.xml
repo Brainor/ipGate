@@ -5,9 +5,9 @@
     <item
         android:id="@+id/学号信息"
         android:title="学号信息" />
-    <item
+ <!--   <item
         android:id="@+id/提交位置"
-        android:title="提交位置" />
+        android:title="提交位置" />-->
     <item
         android:id="@+id/关于"
         android:title="关于"

@@ -45,7 +45,7 @@ public class disconnectSpecifiedConnection extends AppCompatActivity {
             断开按钮 = new Button(this);
             断开按钮.setTag(contentSplit[4 * i]);//在数据更改之前先把IP地址写入
             contentSplit[4 * i] = contentSplit[4 * i] + "\n" + contentSplit[4 * i + 2];
-            contentSplit[4 * i + 1] = contentSplit[4 * i + 1].replace("地址", "");
+//            contentSplit[4 * i + 1] = contentSplit[4 * i + 1].replace("地址", "");
             try {
                 Date 时间 = new SimpleDateFormat("y-MM-dd kk:mm:ss").parse(contentSplit[4 * i + 3]);
                 contentSplit[4 * i + 3] = new SimpleDateFormat("M月d日\nH:mm:ss").format(时间);
@@ -55,7 +55,7 @@ public class disconnectSpecifiedConnection extends AppCompatActivity {
 
             for (int j = 0; j < 4; j++) {
 
-                if (j == 2) {
+                if (j == 2 || j == 1) {
                     continue;
                 }
                 单元格参数 = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT);
@@ -64,7 +64,7 @@ public class disconnectSpecifiedConnection extends AppCompatActivity {
                 //if (j == 3) 文本.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 10);
                 String 写入内容 = contentSplit[4 * i + j];
                 文本.setText(写入内容);
-                单元格参数.gravity = (j != 1) ? Gravity.START | Gravity.CENTER_VERTICAL : Gravity.CENTER;
+                单元格参数.gravity = Gravity.START | Gravity.CENTER_VERTICAL;
                 文本.setLayoutParams(单元格参数);
                 文本.setPadding(8, 0, 8, 0);
                 tableRow.addView(文本);
@@ -87,7 +87,7 @@ public class disconnectSpecifiedConnection extends AppCompatActivity {
             tableRow.addView(断开按钮);
             if (tableLayout != null) tableLayout.addView(tableRow);
         }
-        文本= new TextView(this);
+        文本 = new TextView(this);
         文本.setText("新建连接可能需要几分钟后才能显示");
         文本.setPadding(8, 64, 8, 0);
         文本.setLayoutParams(new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT, TableLayout.LayoutParams.MATCH_PARENT));
