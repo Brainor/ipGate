@@ -28,20 +28,17 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
@@ -64,7 +61,15 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         //增加用户信息列表
-        final File 文件 = new File(getExternalFilesDir(null), "user.ini");
+        SharedPreferences preferences = getPreferences(MODE_PRIVATE);
+        Set<String> 学生信息 = preferences.getStringSet("student", new HashSet<String>());
+        Iterator<String>iterator=学生信息.iterator();
+        while(iterator.hasNext()){
+            String 学号=iterator.next();
+            学号s_spinner.add(new netConnectingData.userInfo(学号, iterator.next()));
+        }
+
+       /* final File 文件 = new File(getExternalFilesDir(null), "user.ini");
         try {
             if (文件.isFile()) {
                 try (BufferedReader bufferedReader = new BufferedReader(new FileReader(文件))) {
@@ -79,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
             }
         } catch (IOException e) {
             Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
-        }
+        }*/
         /*学号s_spinner.add(new netConnectingData.userInfo("1301110110", "Oudanyi6456"));
         学号s_spinner.add(new netConnectingData.userInfo("gcuspea", "phyfsc508"));*/
         if (学号s_spinner.size() == 0) {
@@ -108,14 +113,11 @@ public class MainActivity extends AppCompatActivity {
         学号_spinner = (Spinner) findViewById(R.id.学生信息);
 
         //设置token
-
-        SharedPreferences preferences = getSharedPreferences("preference_file_key", Activity.MODE_PRIVATE);
-//        preferences.edit().putString("token", "IPGWAndroid1.4_Xiaomi7.0_fc53be1c-57f6-4d3b-9e59-75cd3280f416").apply();//之后注释掉
         netConnectingData.userInfo.token = preferences.getString("token", "");
         if (netConnectingData.userInfo.token.isEmpty()) {
-            String token = "IPGWAndroid1.4_";
-            token += Build.BRAND.replace(" ", "_") + Build.VERSION.RELEASE + "_";
-            token += UUID.randomUUID().toString();
+            String token = "IPGWAndroid1.4_" +
+                    Build.BRAND.replace(" ", "_") + Build.VERSION.RELEASE + "_" +
+                    UUID.randomUUID().toString();
             preferences.edit().putString("token", token).apply();
             netConnectingData.userInfo.token = token;
         }
@@ -280,7 +282,7 @@ public class MainActivity extends AppCompatActivity {
                 builder.setMessage("连接北大网关.\n" +
                         "版本更新:\n" +
                         "v1.5\n" +
-                        "   添加user-agent" +
+                        "   添加user-agent\n" +
                         "v1.4\n" +
                         "   使用学校API\n" +
                         "   长按断开连接可以断开指定连接" +
@@ -319,7 +321,7 @@ public class MainActivity extends AppCompatActivity {
                                     break;
                                 case R.id.删除:
                                     学号s_spinner.remove(index);
-                                    writeFile();
+                                    writePreferences();
                                     break;
                             }
                             return false;
@@ -377,7 +379,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                         if (index >= 0) 学号s_spinner.set(index, new netConnectingData.userInfo(学号, 密码));
                         else 学号s_spinner.add(new netConnectingData.userInfo(学号, 密码));
-                        writeFile();
+                        writePreferences();
                     }
                 })
                 .setNegativeButton("取消", new DialogInterface.OnClickListener() {
@@ -494,7 +496,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * 保存学号到文件
-     */
+     *//*
     protected void writeFile() {
         final File 文件 = new File(getExternalFilesDir(null), "user.ini");
         try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(文件))) {
@@ -508,8 +510,20 @@ public class MainActivity extends AppCompatActivity {
         } catch (IOException e) {
             Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
         }
-    }
+    }*/
+    protected void writePreferences(){
+        SharedPreferences preferences =getPreferences(MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        HashSet<String> 学生信息 = new HashSet<>();
 
+        for (netConnectingData.userInfo 学生 : 学号s_spinner) {
+            学生信息.add(学生.学号);
+            学生信息.add(学生.密码);
+        }
+        editor.putStringSet("student",学生信息).apply();
+
+
+    }
     protected void 设置列表() {
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);

@@ -108,7 +108,7 @@ class network extends netConnectingData {
     private String 信息翻译(String Content) {
         Content = Content.replaceAll("\"ver.*?,", "");
         Content = Content.replaceAll("\"FIXRATE.*?,", "");
-        Content = Content.replace("FR_DESC_CN", "包月状态");
+/*        Content = Content.replace("FR_DESC_CN", "包月状态");
         Content = Content.replaceAll("\"FR_DESC_EN.*?,", "");
         Matcher matcher = Pattern.compile("(?<=FR_TIME_CN\":\")\\d++\\.\\d++").matcher(Content);
         if (matcher.find()) {//java.time.Duration duration;不支持JDK8
@@ -122,10 +122,11 @@ class network extends netConnectingData {
         Content = Content.replaceAll("\"FR_TIME_EN.*?,", "");
         Content = Content.replace("SCOPE", "访问范围");
         if (Content.contains("domestic")) Content = Content.replace("domestic", "免费流量");
-        else Content = Content.replace("international", "收费流量");
+        else Content = Content.replace("international", "收费流量");*/
+        Content = Content.replaceAll("\"FR.*?,", "");
         Content = Content.replace("CONNECTIONS", "当前连接数");
         Content = Content.replace("BALANCE_CN", "余额");
-        Content = Content.replaceAll("\"BALANCE_EN.*?,", "");
+        Content = Content.replaceAll("\"BALANCE_EN.*?,", "").replaceAll("\"SCOPE.*?,","").replaceAll("\"DEFICIT.*?,","");
         return Content;
     }
 
