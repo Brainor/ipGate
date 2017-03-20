@@ -413,7 +413,7 @@ public class MainActivity extends AppCompatActivity {
     */
     static final String[] 连接类型 = new String[]{"open", "close", "closeall", "getconnections", "disconnect"};//连接, 断开连接, 断开所有连接, 获取连接状态, 断开指定连接
 
-    public class netInteract extends AsyncTask<netConnectingData, Void, ArrayList<String[]>> {//网络交互
+    private class netInteract extends AsyncTask<netConnectingData, Void, ArrayList<String[]>> {//网络交互
 
         @Override
         protected ArrayList<String[]> doInBackground(netConnectingData... 连接信息s) {
@@ -521,7 +521,7 @@ public class MainActivity extends AppCompatActivity {
             学生信息.add(学生.密码);
         }
         editor.putStringSet("student",学生信息).apply();
-
+        设置列表();
 
     }
     protected void 设置列表() {
