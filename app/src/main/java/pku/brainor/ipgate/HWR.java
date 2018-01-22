@@ -68,17 +68,17 @@ class network extends netConnectingData {
             }
         }
         //分析网页部分
-        String line, ResponseFromServer = "";
+        String line;StringBuilder ResponseFromServer = new StringBuilder();
         try {
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(request.getInputStream()));
             while ((line = bufferedReader.readLine()) != null) {
-                ResponseFromServer += line + "\n";
+                ResponseFromServer.append(line).append("\n");
             }
         } catch (IOException e) {
             return "{\"error\":\"" + e.getMessage() + "\"}\n";
         }
         request.disconnect();
-        return ResponseFromServer;
+        return ResponseFromServer.toString();
     }
 
     /**
@@ -89,7 +89,7 @@ class network extends netConnectingData {
      * @return 填入UI的字符串数组
      */
     private ArrayList<String[]> 信息分割(String Content) {
-        Content = Content.replaceAll("\\{\\\"|\"\\}\\n", "");//去掉首尾{", "}\n
+        Content = Content.replaceAll("\\{\"|\"\\}\\n", "");//去掉首尾{", "}\n
         String[] contentSplit = Content.split("\",\"");//利用","分隔
         ArrayList<String[]> contentDoubleSplit = new ArrayList<>();
         for (String splitPiece : contentSplit) {
@@ -167,6 +167,12 @@ class netConnectingData {//数据
         userInfo(String 学号, String 密码) {
             this.学号 = 学号;
             this.密码 = 密码;
+            token = "";
+        }
+
+        userInfo(String[] 学号密码) {
+            this.学号 = 学号密码[0];
+            this.密码 = 学号密码[1];
             token = "";
         }
     }

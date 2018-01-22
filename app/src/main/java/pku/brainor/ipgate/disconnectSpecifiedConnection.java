@@ -1,6 +1,5 @@
 package pku.brainor.ipgate;
 
-import android.database.sqlite.SQLiteOpenHelper;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -31,7 +30,7 @@ public class disconnectSpecifiedConnection extends AppCompatActivity {
         Content = getIntent().getStringExtra("content");//传入变量是String
         // 类似形式: 162.105.13.91;免费地址;物理楼;2016-07-04 22:04:52;162.105.13.133;免费地址;物理楼;2016-07-04 20:07:09;10.128.131.126;免费地址;畅新2号楼;2016-07-04 18:59:34
         String[] contentSplit = Content.split(";");//IP地址, 收费免费, 物理地址, 连接时间
-        final TableLayout tableLayout = (TableLayout) findViewById(R.id.表格);
+        final TableLayout tableLayout = findViewById(R.id.表格);
         int IP数量 = contentSplit.length / 4;
 
         TableRow tableRow;
@@ -76,13 +75,10 @@ public class disconnectSpecifiedConnection extends AppCompatActivity {
             断开按钮.setLayoutParams(单元格参数);
             //断开按钮.setPadding(6, 6, 6, 6);
 
-            断开按钮.setOnClickListener(new Button.OnClickListener() {
-                @Override
-                public void onClick(View view) {
+            断开按钮.setOnClickListener(view -> {
 //                    设置初始页面();
-                    setResult(RESULT_OK, getIntent().putExtra("IP", view.getTag().toString()));
-                    finish();
-                }
+                setResult(RESULT_OK, getIntent().putExtra("IP", view.getTag().toString()));
+                finish();
             });
             tableRow.addView(断开按钮);
             if (tableLayout != null) tableLayout.addView(tableRow);

@@ -2,7 +2,6 @@ package pku.brainor.ipgate;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -10,7 +9,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -30,7 +28,6 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -53,15 +50,13 @@ public class MainActivity extends AppCompatActivity {
 
     void 设置初始页面() {
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         //增加用户信息列表
         SharedPreferences preferences = getPreferences(MODE_PRIVATE);
-        Set<String> 学生信息 = preferences.getStringSet("student", new HashSet<String>());
-        Iterator<String> iterator = 学生信息.iterator();
-        while (iterator.hasNext()) {
-            String 学号 = iterator.next();
-            学号s_spinner.add(new netConnectingData.userInfo(学号, iterator.next()));
+        Set<String> 学生信息 = preferences.getStringSet("student", new HashSet<>());
+        for (String 学号密码 : 学生信息) {
+            学号s_spinner.add(new netConnectingData.userInfo(学号密码.split("\\|\\|")));
         }
 
        /* final File 文件 = new File(getExternalFilesDir(null), "user.ini");
@@ -85,27 +80,19 @@ public class MainActivity extends AppCompatActivity {
         if (学号s_spinner.size() == 0) {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setMessage("没有学号信息, 请添加.")
-                    .setPositiveButton("添加学号", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            学号信息();
-                        }
-                    })
-                    .setNegativeButton("取消", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
+                    .setPositiveButton("添加学号", (dialogInterface, i) -> 学号信息())
+                    .setNegativeButton("取消", (dialogInterface, i) -> {
 
-                        }
                     });
             builder.show();
         }
         // Get our button from the layout resource,
         // and attach an event to it
-        UI显示_textview = (TextView) findViewById(R.id.信息文本);
-        button[0] = (Button) findViewById(R.id.button1);
-        button[1] = (Button) findViewById(R.id.button2);
-        button[2] = (Button) findViewById(R.id.button3);
-        学号_spinner = (Spinner) findViewById(R.id.学生信息);
+        UI显示_textview = findViewById(R.id.信息文本);
+        button[0] = findViewById(R.id.button1);
+        button[1] = findViewById(R.id.button2);
+        button[2] = findViewById(R.id.button3);
+        学号_spinner = findViewById(R.id.学生信息);
 
         //设置token
         netConnectingData.userInfo.token = preferences.getString("token", "");
@@ -119,20 +106,12 @@ public class MainActivity extends AppCompatActivity {
         设置列表();
 
         for (Button item : button)
-            item.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    连接(view);
-                }
-            });
-        button[1].setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View view) {
-                view.setTag("3");
-                连接(view);
-                Toast.makeText(getApplicationContext(), "断开指定连接", Toast.LENGTH_LONG).show();
-                return true;
-            }
+            item.setOnClickListener(this::连接);
+        button[1].setOnLongClickListener(view -> {
+            view.setTag("3");
+            连接(view);
+            Toast.makeText(getApplicationContext(), "断开指定连接", Toast.LENGTH_LONG).show();
+            return true;
         });
     }
 
@@ -300,48 +279,33 @@ public class MainActivity extends AppCompatActivity {
         ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_expandable_list_item_1);
         for (netConnectingData.userInfo 学生 : 学号s_spinner) arrayAdapter.add(学生.学号);
         registerForContextMenu(学号view);
-        学号view.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener() {
-            @Override
-            public void onCreateContextMenu(ContextMenu contextMenu, View view, ContextMenu.ContextMenuInfo contextMenuInfo) {
-                getMenuInflater().inflate(R.menu.menu_modifyid, contextMenu);
-                for (int i = 0; i < contextMenu.size(); i++) {
-                    contextMenu.getItem(i).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-                        @Override
-                        public boolean onMenuItemClick(MenuItem menuItem) {
-                            AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuItem.getMenuInfo();
-                            int index = info.position;
-                            switch (menuItem.getItemId()) {
-                                case R.id.修改:
-                                    学号操作(index);
-                                    break;
-                                case R.id.删除:
-                                    学号s_spinner.remove(index);
-                                    writePreferences();
-                                    break;
-                            }
-                            return false;
-                        }
-                    });
-                }
+        学号view.setOnCreateContextMenuListener((contextMenu, view, contextMenuInfo) -> {
+            getMenuInflater().inflate(R.menu.menu_modifyid, contextMenu);
+            for (int i = 0; i < contextMenu.size(); i++) {
+                contextMenu.getItem(i).setOnMenuItemClickListener(menuItem -> {
+                    AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuItem.getMenuInfo();
+                    int index = info.position;
+                    switch (menuItem.getItemId()) {
+                        case R.id.修改:
+                            学号操作(index);
+                            break;
+                        case R.id.删除:
+                            学号s_spinner.remove(index);
+                            writePreferences();
+                            break;
+                    }
+                    return false;
+                });
             }
-
         });
         学号view.setAdapter(arrayAdapter);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setView(学号view)
-                .setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
+                .setPositiveButton("确定", (dialogInterface, i) -> {
 
-                    }
                 })
-                .setNeutralButton("添加", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        学号操作(i);
-                    }
-                })
+                .setNeutralButton("添加", (dialogInterface, i) -> 学号操作(i))
                 .setTitle("学号信息");
         builder.show();
     }
@@ -355,34 +319,28 @@ public class MainActivity extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
         LayoutInflater inflater = LayoutInflater.from(MainActivity.this);
         final View 添加用户view = inflater.inflate(R.layout.addid, null);
-        final TextView 学号view = (TextView) 添加用户view.findViewById(R.id.学号);
-        final TextView 密码view = (TextView) 添加用户view.findViewById(R.id.密码);
+        final TextView 学号view = 添加用户view.findViewById(R.id.学号);
+        final TextView 密码view = 添加用户view.findViewById(R.id.密码);
         final int index = i;
         if (i >= 0) {//修改已有信息
             学号view.setText(学号s_spinner.get(index).学号);
             密码view.setText(学号s_spinner.get(index).密码);
         }
         final AlertDialog dialog = builder.setView(添加用户view)
-                .setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        String 学号 = 学号view.getText().toString();
-                        String 密码 = 密码view.getText().toString();
-                        if (Objects.equals(学号, "") || Objects.equals(密码, "")) {
-                            Toast.makeText(getApplicationContext(), "输入正确学号和密码", Toast.LENGTH_LONG).show();
-                            return;
-                        }
-                        if (index >= 0)
-                            学号s_spinner.set(index, new netConnectingData.userInfo(学号, 密码));
-                        else 学号s_spinner.add(new netConnectingData.userInfo(学号, 密码));
-                        writePreferences();
+                .setPositiveButton("确定", (dialogInterface, i1) -> {
+                    String 学号 = 学号view.getText().toString();
+                    String 密码 = 密码view.getText().toString();
+                    if (Objects.equals(学号, "") || Objects.equals(密码, "")) {
+                        Toast.makeText(getApplicationContext(), "输入正确学号和密码", Toast.LENGTH_LONG).show();
+                        return;
                     }
+                    if (index >= 0)
+                        学号s_spinner.set(index, new netConnectingData.userInfo(学号, 密码));
+                    else 学号s_spinner.add(new netConnectingData.userInfo(学号, 密码));
+                    writePreferences();
                 })
-                .setNegativeButton("取消", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
+                .setNegativeButton("取消", (dialogInterface, i12) -> {
 
-                    }
                 })
                 .create();
         dialog.show();
@@ -469,19 +427,19 @@ public class MainActivity extends AppCompatActivity {
                 }
                 if (Objects.equals(contentSplit.get(0)[1], "")) contentSplit.remove(0);//删去成功信息
             default:
-                String 显示文本 = "";
-                for (String[] content : contentSplit) 显示文本 += content[0] + ":" + content[1] + "\n";
+                StringBuilder 显示文本 = new StringBuilder();
+                for (String[] content : contentSplit) 显示文本.append(content[0]).append(":").append(content[1]).append("\n");
                 try {
                     for (InterfaceAddress interfaceAddress : NetworkInterface.getByName("wlan0").getInterfaceAddresses())
                         if (interfaceAddress.getAddress() instanceof Inet4Address) {
-                            显示文本 += "局域网地址:" + interfaceAddress.getAddress().getHostAddress();
+                            显示文本.append("局域网地址:").append(interfaceAddress.getAddress().getHostAddress());
                             break;
                         }
                 } catch (SocketException e) {
                     e.printStackTrace();
                 }
 
-                UI显示_textview.setText(显示文本);
+                UI显示_textview.setText(显示文本.toString());
                 break;
         }
     }
@@ -522,11 +480,7 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences preferences = getPreferences(MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
         HashSet<String> 学生信息 = new HashSet<>();
-
-        for (netConnectingData.userInfo 学生 : 学号s_spinner) {
-            学生信息.add(学生.学号);
-            学生信息.add(学生.密码);
-        }
+        for (netConnectingData.userInfo 学生 : 学号s_spinner) 学生信息.add(学生.学号 + "||" + 学生.密码);
         editor.putStringSet("student", 学生信息).apply();
         设置列表();
 
